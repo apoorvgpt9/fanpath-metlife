@@ -2,11 +2,11 @@
 
 _Fan-facing GenAI navigation for MetLife Stadium during the FIFA World Cup 2026 final. Ask in your own words where you are and where you're going — get text directions and a schematic route map, in your language, with your accessibility needs honored._
 
-**Live demo:** _(pending Phase 0 deploy — updated in place)_
+**Live demo:** <https://fanpath-metlife-973486326780.asia-south1.run.app> — only `/health` is live so far; fan/staff interfaces ship in Phase 4.
 
-**Status:** _(pending Phase 0 — updated in place)_
+**Status:** Phase 1 of 6 complete (skeleton, MetLife zone graph, Firebase Anonymous Auth, Firestore schema). Phase 2 (pathfinding) next. No fan-facing navigation feature is live yet.
 
-**Coverage:** _(pending Phase 2 close — updated in place)_
+**Coverage:** 98.45% (`app/`, floor enforced at 95%)
 
 ---
 
