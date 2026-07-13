@@ -186,7 +186,14 @@ def claim_09_edge_accessibility_enum() -> Result:
 
 
 def claim_10_pathfinding_union() -> Result:
-    return SKIP, "not yet applicable — Phase 2 (pathfinding)"
+    engine = _read(REPO_ROOT / "app" / "pathfinding" / "engine.py")
+    if engine is None:
+        return SKIP, "app/pathfinding/engine.py not present yet"
+    required = ["RouteFound", "RouteBlocked", "RouteImpossible"]
+    missing = [name for name in required if name not in engine]
+    if missing:
+        return FAIL, f"pathfinding/engine.py missing union member(s): {missing}"
+    return PASS, "engine.py defines RouteFound | RouteBlocked | RouteImpossible"
 
 
 def claim_11_intent_agent_union() -> Result:
@@ -210,7 +217,7 @@ def claim_17_model_tier() -> Result:
 
 
 def claim_18_graph_static_load() -> Result:
-    return SKIP, "graph JSON exists (Phase 1a); startup loader wired in Phase 2/4"
+    return SKIP, "loader module exists; not yet invoked at app startup — Phase 4"
 
 
 def claim_19_venue_state_per_request() -> Result:

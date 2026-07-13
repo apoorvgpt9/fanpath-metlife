@@ -1,0 +1,80 @@
+{
+  "_note": "Synthetic 8-node graph for Layer-2 unit tests (DECISIONS.md Entry #21). NOT the real MetLife graph — chosen to make each required test case observable in isolation. 'island' has no edges → RouteImpossible. Edge b-e is a stairs_only shortcut; c-g is a stairs_only shortcut. Accessible-only routing forces the longer level/ramp/elevator path.",
+  "nodes": [
+    {
+      "zone_id": "a",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["A entrance"],
+      "x": 0,
+      "y": 0
+    },
+    {
+      "zone_id": "b",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["B junction"],
+      "x": 100,
+      "y": 0
+    },
+    {
+      "zone_id": "c",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["C junction"],
+      "x": 200,
+      "y": 0
+    },
+    {
+      "zone_id": "d",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["D level"],
+      "x": 0,
+      "y": 100
+    },
+    {
+      "zone_id": "e",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["E level"],
+      "x": 100,
+      "y": 100
+    },
+    {
+      "zone_id": "f",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["F level"],
+      "x": 200,
+      "y": 100
+    },
+    {
+      "zone_id": "g",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["G destination"],
+      "x": 300,
+      "y": 50
+    },
+    {
+      "zone_id": "island",
+      "sections": [],
+      "amenities": {"restroom": false, "food": false, "merchandise": false, "atm": false, "first_aid": false, "charging_station": false},
+      "landmark_aliases": ["Disconnected island"],
+      "x": 500,
+      "y": 500
+    }
+  ],
+  "edges": [
+    {"from": "a", "to": "b", "walk_time_minutes": 2, "accessibility": "level"},
+    {"from": "b", "to": "c", "walk_time_minutes": 3, "accessibility": "level"},
+    {"from": "c", "to": "f", "walk_time_minutes": 2, "accessibility": "level"},
+    {"from": "a", "to": "d", "walk_time_minutes": 3, "accessibility": "ramp"},
+    {"from": "d", "to": "e", "walk_time_minutes": 2, "accessibility": "level"},
+    {"from": "e", "to": "f", "walk_time_minutes": 3, "accessibility": "elevator"},
+    {"from": "b", "to": "e", "walk_time_minutes": 1, "accessibility": "stairs_only"},
+    {"from": "f", "to": "g", "walk_time_minutes": 4, "accessibility": "elevator"},
+    {"from": "c", "to": "g", "walk_time_minutes": 2, "accessibility": "stairs_only"}
+  ]
+}
