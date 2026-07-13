@@ -6,17 +6,17 @@ DECISIONS.md is the constitutional spec. This file is the running log of what ac
 
 **Deadline:** July 19, 2026.
 
-**Live URL:** _(added at Phase 0 close)_
+**Live URL:** <https://fanpath-metlife-973486326780.asia-south1.run.app>
 
-**Repo:** _(added at Phase 0 close)_
+**Repo:** <https://github.com/apoorvgpt9/fanpath-metlife>
 
 ---
 
 ## Phase status
 
-| Phase | Description                                          | Status       | Machine validation | Intent validation | Notes                                             |
-| ----- | ---------------------------------------------------- | ------------ | ------------------ | ----------------- | ------------------------------------------------- |
-| 0     | Skeleton, config, Day-1 deploy                       | NOT STARTED  | —                  | —                 | Live URL must be green before this closes         |
+| Phase | Description                                          | Status              | Machine validation | Intent validation | Notes                                             |
+| ----- | ---------------------------------------------------- | ------------------- | ------------------ | ----------------- | ------------------------------------------------- |
+| 0     | Skeleton, config, Day-1 deploy                       | MACHINE-VALIDATED   | 2026-07-13         | pending           | Live URL green; commit c81776d; awaiting intent validation |
 | 1     | Graph (blocker) + auth + schema                      | NOT STARTED  | —                  | —                 | 1a+1b block all downstream; 4-hour cap on 1a      |
 | 2     | Pathfinding + Layer-2 tests                          | NOT STARTED  | —                  | —                 | Highest-value tests                               |
 | 3     | Intent + Guide agents + Gemini pre-flight            | NOT STARTED  | —                  | —                 | Pre-flight before agent logic                     |
@@ -92,7 +92,7 @@ Each row is: claim from DECISIONS.md → the grep or file check that verifies it
 
 Append an entry at each phase close: date, what shipped, validation command outputs, deviations from plan, decisions amended in DECISIONS.md.
 
-- **[Not yet started]** — Build begins with Phase 0.
+- **2026-07-13 — Phase 0 (MACHINE-VALIDATED, awaiting intent validation).** Shipped: `pyproject.toml` (ruff select E/F/W/C901/PLR0912/PLR0915/I/B, max-complexity=10, `--cov-fail-under=95`), Makefile (lint/test/verify-graph/verify-docs/run/deploy), `scripts/check_function_length.py` (AST-based, MAX_FUNCTION_LINES=80), `scripts/verify_graph.py` (placeholder — skips until data/metlife_graph.json exists), `scripts/verify_docs.py` (6 real PASS: claims 1-4, 15, 16 / 14 SKIP for later phases / 0 FAIL), `app/main.py` (FastAPI `redirect_slashes=False`, CORS from `ALLOWED_ORIGIN`, security-headers middleware, `GET /health`), `Dockerfile` (python:3.12-slim + `--no-server-header`), `.github/workflows/ci.yml`, `.env.example`, `.gitignore`, `tests/test_main.py` (7 tests, 100% app coverage). Pre-flight: gcloud project=`promptwars-c4-metlife`, billing enabled, Firebase Anonymous Auth enabled. Deploy: `gcloud run deploy` to `asia-south1`; required IAM roles granted to compute default SA (`roles/cloudbuild.builds.builder`, `roles/storage.objectViewer`, `roles/artifactregistry.writer`, `roles/logging.logWriter`). Live URL returns `{"status":"ok"}` with HTTP 200. Commit `c81776d` pushed to origin/main. No DECISIONS.md amendments this phase.
 
 ---
 
@@ -110,4 +110,4 @@ Every deploy is logged with a timestamp and a `curl` result. This is the Efficie
 
 | Timestamp (UTC) | Commit SHA | `curl /health` result | Deploy source (phase) |
 | --------------- | ---------- | --------------------- | --------------------- |
-| _(pending Phase 0)_ | —          | —                     | —                     |
+| 2026-07-13T16:30:35Z | c81776d | `{"status":"ok"}` — HTTP 200 | Phase 0 (skeleton) |
