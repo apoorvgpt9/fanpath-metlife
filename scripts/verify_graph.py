@@ -8,6 +8,8 @@ consistency, not external correctness).
 Hard failures (exit 1):
     - graph file exists but is malformed / missing top-level keys
     - non-empty ``sections`` per node; no section number in >1 zone
+    - ``landmark_aliases`` per node must be a non-empty list of strings
+      (Phase 3 Intent Agent depends on this field; no fallback exists)
     - orphan nodes (no incident edges)
     - self-loop edges
     - full graph is not connected
@@ -78,6 +80,15 @@ def _check_nodes(nodes: list[dict]) -> list[str]:
             got = sorted(amenities.keys()) if isinstance(amenities, dict) else amenities
             errors.append(
                 f"{zid}: amenity keys must equal exactly {sorted(AMENITY_KEYS)}; got {got}"
+            )
+        aliases = node.get("landmark_aliases")
+        if (
+            not isinstance(aliases, list)
+            or not aliases
+            or not all(isinstance(a, str) and a.strip() for a in aliases)
+        ):
+            errors.append(
+                f"{zid}: landmark_aliases must be a non-empty list of non-empty strings"
             )
     for section, owners in section_owners.items():
         if len(owners) > 1:

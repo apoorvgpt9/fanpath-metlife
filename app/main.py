@@ -8,11 +8,16 @@ from __future__ import annotations
 
 import os
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
+
+# Populate os.environ from a local .env file, if present. No-op in CI and on
+# Cloud Run (where env vars are injected directly and no .env file exists).
+load_dotenv()
 
 _SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",

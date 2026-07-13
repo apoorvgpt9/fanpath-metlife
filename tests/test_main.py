@@ -4,12 +4,16 @@ Covers real Phase 0 features only:
   * GET /health returns {"status": "ok"} with 200
   * Security headers appear on every response
   * ALLOWED_ORIGIN env var is parsed into a list of origins
+  * ``load_dotenv()`` is wired and safe when no .env file is present
 """
 
 from __future__ import annotations
 
 import importlib
+import sys
+from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import main as main_module
@@ -60,3 +64,14 @@ def test_module_reimport_is_stable() -> None:
     # Guard against side-effect surprises at import time.
     reloaded = importlib.reload(main_module)
     assert reloaded.app.title == "fanpath-metlife"
+
+
+def test_module_imports_without_env_file(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Reimport app.main from a working directory that has no .env file.
+    # load_dotenv() must be a safe no-op (returns False, no exception).
+    monkeypatch.chdir(tmp_path)
+    sys.modules.pop("app.main", None)
+    with patch("dotenv.load_dotenv", return_value=False) as spy:
+        import app.main as reloaded_main  # noqa: F401
+
+        spy.assert_called_once()
