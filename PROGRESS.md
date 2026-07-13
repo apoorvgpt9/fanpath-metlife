@@ -28,6 +28,26 @@ DECISIONS.md is the constitutional spec. This file is the running log of what ac
 
 ---
 
+## Revised schedule (as of July 13, 2026 — compressed from 10 days to 6 build days + submission day)
+
+**Why this changed:** the original Phase Plan assumed a 10-day window at 2-3 hrs/day starting ~July 8. As of July 13, Phase 0 has not yet closed and only 6 build days remain before the July 19 deadline. Working capacity increased to 4-5 hrs/day to compensate, giving ~24-30 hours against ~25-26 hours of planned Phase 0-5 work — feasible, but with effectively zero slack. Two decisions were locked in to protect that margin: a hard 3-hour cap with a predetermined fallback on Phase 1a graph construction (DECISIONS.md Entry #27), and a tool-allocation change routing Phases 2 and 3 to Claude Code instead of Copilot, since a Copilot drift/redo cycle on the discriminated-union contracts in those phases is not recoverable inside this schedule.
+
+| Day | Date | Phase | Budgeted hours | Tool |
+| --- | --- | --- | --- | --- |
+| 1 | Jul 13 | Phase 0 — skeleton, config, Day-1 deploy | ~3 | Copilot |
+| 2 | Jul 14 | Phase 1 — graph (3hr cap, Entry #27) + auth + Firestore schema | ~4.5-5 | Copilot (1b-1d); graph draft via Gemini |
+| 3 | Jul 15 | Phase 2 — pathfinding engine + Layer-2 unit tests | ~4-5 | **Claude Code** |
+| 4 | Jul 16 | Phase 3 — Intent + Guide agents + Gemini pre-flight + contract tests | ~4-5 | **Claude Code** |
+| 5 | Jul 17 | Phase 4 — endpoints + frontend + renderer + closures + integration + full deploy | ~4-5 | Copilot |
+| 6 | Jul 18 | Phase 5 (compressed, ~2hr) + contingency buffer for spillover | ~4-5 | — |
+| 7 | Jul 19 | Phase 6 — final gauntlet + submit. No new features. | ~1-2 | — |
+
+**Contingency logic:** Day 6's buffer is sized to absorb spillover from the two most likely sources — Phase 1a (graph, despite the cap) and Phase 3 (agent behavior, given the just-discovered Gemini model migration in Entry #26 is untested against real prompts yet). Phase 5 compresses cleanly because Evaluator Insights already established presentation as a cleared floor, not a differentiator, for this rubric.
+
+**Open item:** confirm the exact submission portal close time on July 19 — determines whether Day 7 has real working hours or the effective deadline is end-of-Day-6.
+
+---
+
 ## `make verify-docs` — verifiable claim set
 
 Per DECISIONS.md Entry #24, Layer 2 requires an explicit set of claims the CI script checks. This is that set. Add to it as new claims appear; do not delete claims once added (mark them "retired" instead, with a rationale).

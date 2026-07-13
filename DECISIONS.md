@@ -571,6 +571,47 @@ Staff toggle updates the arrays. One Firestore read per navigation request to ge
 
 ---
 
+## Entry #26 — Gemini model strings updated: 2.5 → 3.5/3.1 (supersedes model names in Entry #13)
+
+**Status:** Active. **Supersedes the model-name specifics in Entry #13** — the Flash/Pro tier *strategy* in Entry #13 is unchanged and remains active; only the literal model strings are superseded here.
+
+**Trigger:** `gemini-2.5-flash` returned `404 NOT_FOUND` — "This model models/gemini-2.5-flash is no longer available to new users" — when pre-flight tested against the newly created GCP project on July 13, 2026. Confirmed via Google's own docs: Gemini 2.0 Flash and Flash-Lite were shut down June 1, 2026; Gemini 3.5 Flash reached GA in May 2026 and is now the model behind the `gemini-flash-latest` alias.
+
+**Decision:**
+
+- Flash-tier agent calls use **`gemini-3.5-flash`** (GA/stable). Verified working via a live `generateContent` call, 200 response, July 13, 2026.
+- Pro-tier agent calls (if the Phase 3 pre-flight confirms availability) use **`gemini-3.1-pro-preview`**. Verified working via a live `generateContent` call, 200 response, July 13, 2026.
+- **API surface stays on the legacy `generateContent` endpoint**, not the newly-GA'd Interactions API. `generateContent` remains fully supported "for the foreseeable future" per Google's own migration guidance; adopting an unfamiliar API surface mid-build under a compressed deadline is an unnecessary risk. Revisit only if `generateContent` is deprecated before submission (not expected in this window).
+
+**Stated risk (new, not present when Entry #13 was written):** `gemini-3.1-pro-preview` is a **preview**, not GA, model. Preview models are deprecated with at least 2 weeks' notice; short-term-availability models can retire as soon as 45 days after a replacement ships. This is a real, currently low-probability, risk inside the July 19 window.
+
+**Fallback if `gemini-3.1-pro-preview` becomes unavailable mid-build:** both agents drop to `gemini-3.5-flash`. The `gemini_factory.flash()` / `.pro()` pattern (Entry #13) makes this a one-line change per agent — no architecture change required. Document the fallback trigger, if used, as a further amendment.
+
+**`make verify-docs` impact:** none. PROGRESS.md claim #17 checks that *a* model-tier decision is documented and that code matches it — it does not hardcode a model string, so it remains valid as written.
+
+---
+
+## Entry #27 — Phase 1a hard cap: 3 hours, predetermined fallback graph (amends Entry #14)
+
+**Status:** Active. **Amends Entry #14** — the graph construction approach is unchanged; this entry adds a time-box and a predetermined fallback that Entry #14 did not specify.
+
+**Trigger:** Timeline compression — as of July 13, 2026, 6 build days remain before the July 19 deadline (down from the original 10-day window), with zero days of Phase 0 yet complete. Phase 1a (graph construction) is explicitly the least-predictable, highest-blocking task in the Phase Plan; an open-ended correction pass is no longer affordable.
+
+**Decision:** Phase 1a (Gemini draft → manual correction → `metlife_graph.json`) is hard-capped at **3 hours of wall-clock time**, starting from when Gemini's first draft is produced.
+
+**Predetermined fallback (decided now, not improvised under pressure):** If the graph does not pass `make verify-graph` within the 3-hour cap, ship a coarser graph instead of continuing to correct the original:
+
+- **~20-25 nodes** instead of 35-45.
+- **Gate + concourse level only** — drop zone-within-level subdivision (e.g., collapse `lower_west_concourse_a` / `_b` / `_c` into a single `lower_west_concourse` node).
+- All six amenity types and the four accessibility edge classifications are still mandatory on the coarser graph — those are cheap regardless of node count and everything downstream depends on them.
+- Document the reduced fidelity as a one-line append to this entry and in the README's "Technical notes" section, framed honestly as a deliberate scope cut under time pressure, not hidden.
+
+**Why this is an acceptable trade:** Per the Evaluator Insights analysis, Code Quality is the only gradient-scored criterion; PS Alignment (which graph fidelity feeds) is already near-ceiling for well-documented submissions regardless of node count. A working 20-25 node graph that unblocks Phases 2-4 on schedule is worth more than a stalled 35-45 node graph that blows the whole build.
+
+**Outcome (fill in after Phase 1a closes):** _(pending)_
+
+---
+
 ## Carryover lessons from CarbonSaathi (verified against repo, not assumed)
 
 **Carry forward (confirmed effective):**
