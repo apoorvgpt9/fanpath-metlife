@@ -608,7 +608,7 @@ Staff toggle updates the arrays. One Firestore read per navigation request to ge
 
 **Why this is an acceptable trade:** Per the Evaluator Insights analysis, Code Quality is the only gradient-scored criterion; PS Alignment (which graph fidelity feeds) is already near-ceiling for well-documented submissions regardless of node count. A working 20-25 node graph that unblocks Phases 2-4 on schedule is worth more than a stalled 35-45 node graph that blows the whole build.
 
-**Outcome (fill in after Phase 1a closes):** _(pending)_
+**Outcome (fill in after Phase 1a closes):** Cap NOT hit. Draft generated 2026-07-13T16:44:08Z via `gemini-3.5-flash` (36 nodes, 51 edges). Manual correction (recorded in `scripts/_apply_graph_corrections.py`) applied three targeted fixes — (1) removed section-uniqueness violations where premium clubs re-listed concourse sections, (2) changed the sole `coaches_club` edge from `stairs_only` to `elevator` to restore accessibility-subgraph connectivity, (3) filled in missing lower/mezzanine east-arc sections — and `make verify-graph` passed at ~17:04Z, roughly 20 minutes into the cap. Final graph: **36 nodes, 51 edges**, within the 35–45 target. Fallback graph was not needed.
 
 ---
 

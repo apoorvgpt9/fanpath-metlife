@@ -16,6 +16,7 @@ are stubbed as SKIP with the phase that will implement them.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from collections.abc import Callable
@@ -103,23 +104,85 @@ def claim_16_no_server_header() -> Result:
 # ---------------------------------------------------------------------------
 
 def claim_05_fan_profile_fields() -> Result:
-    return SKIP, "not yet applicable — Phase 1c (Firestore schema)"
+    src = _read(REPO_ROOT / "app" / "firestore" / "fans.py")
+    if src is None:
+        return SKIP, "app/firestore/fans.py not present yet"
+    required = ["seat_section", "accessibility_flags", "preferred_language"]
+    missing = [name for name in required if f'"{name}"' not in src and f"'{name}'" not in src]
+    if missing:
+        return FAIL, f"fans.py missing profile field(s): {missing}"
+    return PASS, "fans.py references seat_section, accessibility_flags, preferred_language"
+
+
+def _enum_values(module_src: str, enum_name: str) -> set[str] | None:
+    pattern = rf"class {enum_name}\b.*?(?=\nclass |\Z)"
+    match = re.search(pattern, module_src, flags=re.DOTALL)
+    if not match:
+        return None
+    body = match.group(0)
+    return set(re.findall(r'=\s*"([^"]+)"', body))
 
 
 def claim_06_amenity_enum() -> Result:
-    return SKIP, "not yet applicable — Phase 1a (graph) / Phase 1c (schema)"
+    src = _read(REPO_ROOT / "app" / "models" / "enums.py")
+    if src is None:
+        return SKIP, "app/models/enums.py not present yet"
+    values = _enum_values(src, "AmenityType")
+    expected = {"restroom", "food", "merchandise", "atm", "first_aid", "charging_station"}
+    if values is None:
+        return FAIL, "AmenityType enum not found in app/models/enums.py"
+    if values != expected:
+        return FAIL, f"AmenityType values {sorted(values)} != expected {sorted(expected)}"
+    return PASS, "AmenityType has exactly the six values"
 
 
 def claim_07_language_enum() -> Result:
-    return SKIP, "not yet applicable — Phase 1c (Firestore schema)"
+    src = _read(REPO_ROOT / "app" / "models" / "enums.py")
+    if src is None:
+        return SKIP, "app/models/enums.py not present yet"
+    values = _enum_values(src, "PreferredLanguage")
+    expected = {"en", "es", "fr", "pt", "ar"}
+    if values is None:
+        return FAIL, "PreferredLanguage enum not found"
+    if values != expected:
+        return FAIL, f"PreferredLanguage values {sorted(values)} != expected {sorted(expected)}"
+    return PASS, "PreferredLanguage has exactly the five values"
 
 
 def claim_08_accessibility_flag_enum() -> Result:
-    return SKIP, "not yet applicable — Phase 1c (Firestore schema)"
+    src = _read(REPO_ROOT / "app" / "models" / "enums.py")
+    if src is None:
+        return SKIP, "app/models/enums.py not present yet"
+    values = _enum_values(src, "AccessibilityFlag")
+    expected = {"wheelchair", "no_stairs", "stroller", "visual_impairment"}
+    if values is None:
+        return FAIL, "AccessibilityFlag enum not found"
+    if values != expected:
+        return FAIL, f"AccessibilityFlag values {sorted(values)} != expected {sorted(expected)}"
+    return PASS, "AccessibilityFlag has exactly the four values"
 
 
 def claim_09_edge_accessibility_enum() -> Result:
-    return SKIP, "not yet applicable — Phase 1a (graph)"
+    src = _read(REPO_ROOT / "app" / "models" / "enums.py")
+    if src is None:
+        return SKIP, "app/models/enums.py not present yet"
+    values = _enum_values(src, "EdgeAccessibility")
+    expected = {"stairs_only", "ramp", "elevator", "level"}
+    if values is None:
+        return FAIL, "EdgeAccessibility enum not found"
+    if values != expected:
+        return FAIL, f"EdgeAccessibility values {sorted(values)} != expected {sorted(expected)}"
+    # Spot-check graph edges use only these values, if the graph exists.
+    graph_path = REPO_ROOT / "data" / "metlife_graph.json"
+    if graph_path.exists():
+        try:
+            data = json.loads(graph_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            return FAIL, f"metlife_graph.json unreadable: {exc}"
+        stray = {e.get("accessibility") for e in data.get("edges", [])} - expected
+        if stray:
+            return FAIL, f"graph edges contain unknown accessibility values: {sorted(stray)}"
+    return PASS, "EdgeAccessibility has exactly the four values; graph edges conform"
 
 
 def claim_10_pathfinding_union() -> Result:
@@ -135,11 +198,11 @@ def claim_12_six_endpoints() -> Result:
 
 
 def claim_13_fan_auth() -> Result:
-    return SKIP, "not yet applicable — Phase 1d (auth) / Phase 4 (endpoints)"
+    return SKIP, "auth dependency exists (Phase 1c); endpoint wiring lands in Phase 4"
 
 
 def claim_14_staff_auth() -> Result:
-    return SKIP, "not yet applicable — Phase 1d (auth) / Phase 4 (endpoints)"
+    return SKIP, "STAFF_TOKEN dependency + endpoint wiring lands in Phase 4"
 
 
 def claim_17_model_tier() -> Result:
@@ -147,7 +210,7 @@ def claim_17_model_tier() -> Result:
 
 
 def claim_18_graph_static_load() -> Result:
-    return SKIP, "not yet applicable — Phase 1a/1b (graph loader)"
+    return SKIP, "graph JSON exists (Phase 1a); startup loader wired in Phase 2/4"
 
 
 def claim_19_venue_state_per_request() -> Result:

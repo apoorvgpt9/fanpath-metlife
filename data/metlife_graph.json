@@ -1,0 +1,1113 @@
+{
+  "nodes": [
+    {
+      "zone_id": "gate_a_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": true,
+        "merchandise": true,
+        "atm": true,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate A Outer Plaza",
+        "Pepsi Gate entrance plaza"
+      ],
+      "x": 220,
+      "y": 100
+    },
+    {
+      "zone_id": "gate_b_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Verizon Gate plaza",
+        "Gate B West entrance"
+      ],
+      "x": 100,
+      "y": 300
+    },
+    {
+      "zone_id": "gate_c_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate C southwest entrance",
+        "near the box office counters"
+      ],
+      "x": 220,
+      "y": 500
+    },
+    {
+      "zone_id": "gate_d_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": true,
+        "merchandise": false,
+        "atm": true,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate D plaza south side",
+        "Verizon Stage outdoor area"
+      ],
+      "x": 400,
+      "y": 550
+    },
+    {
+      "zone_id": "gate_e_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate E entrance plaza",
+        "Southeast plaza entry"
+      ],
+      "x": 580,
+      "y": 500
+    },
+    {
+      "zone_id": "gate_f_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": true,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate F main plaza",
+        "Bud Light Gate plaza area"
+      ],
+      "x": 700,
+      "y": 300
+    },
+    {
+      "zone_id": "gate_g_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "HCL Tech Gate plaza",
+        "Gate G northeast corner"
+      ],
+      "x": 580,
+      "y": 100
+    },
+    {
+      "zone_id": "gate_h_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": true,
+        "merchandise": true,
+        "atm": true,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "MetLife Gate main entry",
+        "Gate H northern entry plaza"
+      ],
+      "x": 400,
+      "y": 50
+    },
+    {
+      "zone_id": "gate_j_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate J outer loop",
+        "NW rideshare drop-off point"
+      ],
+      "x": 120,
+      "y": 120
+    },
+    {
+      "zone_id": "gate_k_plaza",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Gate K pedestrian walkway",
+        "Southeast lot crosswalk"
+      ],
+      "x": 680,
+      "y": 480
+    },
+    {
+      "zone_id": "concourse_100_north",
+      "sections": [
+        "101",
+        "102",
+        "103",
+        "148",
+        "149"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": true,
+        "first_aid": true,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "North Lower Concourse",
+        "concourse near sections 101-103"
+      ],
+      "x": 400,
+      "y": 150
+    },
+    {
+      "zone_id": "concourse_100_northeast",
+      "sections": [
+        "104",
+        "105",
+        "106",
+        "107"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Northeast Lower Concourse",
+        "near section 106 and Bud Light Lounge entrance"
+      ],
+      "x": 520,
+      "y": 180
+    },
+    {
+      "zone_id": "concourse_100_east",
+      "sections": [
+        "108",
+        "109",
+        "110",
+        "111",
+        "112",
+        "113",
+        "114",
+        "115",
+        "116",
+        "117",
+        "118",
+        "119",
+        "120",
+        "121",
+        "122"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "East Lower Concourse",
+        "sideline concourse near section 113"
+      ],
+      "x": 600,
+      "y": 300
+    },
+    {
+      "zone_id": "concourse_100_southwest",
+      "sections": [
+        "129",
+        "130",
+        "131",
+        "133"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Southwest Lower Concourse",
+        "concourse ramp near section 131"
+      ],
+      "x": 280,
+      "y": 420
+    },
+    {
+      "zone_id": "concourse_100_south",
+      "sections": [
+        "123",
+        "124",
+        "125",
+        "126",
+        "127",
+        "128"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": true,
+        "first_aid": true,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "South Lower Concourse endzone",
+        "concourse outside section 126"
+      ],
+      "x": 400,
+      "y": 450
+    },
+    {
+      "zone_id": "concourse_100_west",
+      "sections": [
+        "134",
+        "135",
+        "137",
+        "139",
+        "140",
+        "142",
+        "143"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "West Lower Concourse sideline",
+        "concourse near Verizon Gate escalator"
+      ],
+      "x": 200,
+      "y": 300
+    },
+    {
+      "zone_id": "concourse_200_north",
+      "sections": [
+        "201",
+        "202",
+        "249",
+        "250"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "North Mezzanine Concourse",
+        "200-level near the endzone"
+      ],
+      "x": 400,
+      "y": 210
+    },
+    {
+      "zone_id": "concourse_200_northeast",
+      "sections": [
+        "203",
+        "204",
+        "205",
+        "206",
+        "207",
+        "209",
+        "211",
+        "213"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Northeast Mezzanine",
+        "outside section 205 suite levels"
+      ],
+      "x": 490,
+      "y": 230
+    },
+    {
+      "zone_id": "concourse_200_east",
+      "sections": [
+        "207C",
+        "208",
+        "210",
+        "212",
+        "214",
+        "215",
+        "216",
+        "217",
+        "218",
+        "219",
+        "220",
+        "221",
+        "222",
+        "223"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": true,
+        "first_aid": true,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "East Side Mezzanine Concourse",
+        "near Corona Club entrance"
+      ],
+      "x": 530,
+      "y": 300
+    },
+    {
+      "zone_id": "concourse_200_southwest",
+      "sections": [
+        "229",
+        "230",
+        "231"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Southwest Mezzanine Level",
+        "near escalators on the SW curve"
+      ],
+      "x": 310,
+      "y": 370
+    },
+    {
+      "zone_id": "concourse_200_south",
+      "sections": [
+        "224",
+        "225",
+        "226",
+        "227",
+        "228"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "South Mezzanine Concourse",
+        "200-level southern bowl curve"
+      ],
+      "x": 400,
+      "y": 390
+    },
+    {
+      "zone_id": "concourse_200_west",
+      "sections": [
+        "232C",
+        "234",
+        "237",
+        "239",
+        "241",
+        "242C"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "West Side Mezzanine Concourse",
+        "200-level near the press elevators"
+      ],
+      "x": 270,
+      "y": 300
+    },
+    {
+      "zone_id": "concourse_300_north",
+      "sections": [
+        "301",
+        "302",
+        "303",
+        "348",
+        "349",
+        "350"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "North Upper Deck Concourse",
+        "300-level far north endzone"
+      ],
+      "x": 400,
+      "y": 240
+    },
+    {
+      "zone_id": "concourse_300_northeast",
+      "sections": [
+        "304",
+        "305",
+        "306",
+        "307",
+        "308"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Northeast Upper Concourse",
+        "northeast ramp access 300-level"
+      ],
+      "x": 450,
+      "y": 250
+    },
+    {
+      "zone_id": "concourse_300_east",
+      "sections": [
+        "309",
+        "310",
+        "311",
+        "312",
+        "313",
+        "314",
+        "315",
+        "316"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": true,
+        "first_aid": true,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "East Upper Bowl Concourse",
+        "300-level sideline east"
+      ],
+      "x": 470,
+      "y": 300
+    },
+    {
+      "zone_id": "concourse_300_southwest",
+      "sections": [
+        "329",
+        "330",
+        "331",
+        "332",
+        "333",
+        "334"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Southwest Upper Deck",
+        "300-level curve south-west"
+      ],
+      "x": 350,
+      "y": 350
+    },
+    {
+      "zone_id": "concourse_300_south",
+      "sections": [
+        "323",
+        "324",
+        "325",
+        "326",
+        "327",
+        "328"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "South Upper Bowl Concourse",
+        "300-level far south endzone"
+      ],
+      "x": 400,
+      "y": 360
+    },
+    {
+      "zone_id": "concourse_300_west",
+      "sections": [
+        "335",
+        "336",
+        "337",
+        "338",
+        "339",
+        "340",
+        "341",
+        "342"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": true,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "West Upper Bowl Concourse",
+        "300-level sideline west"
+      ],
+      "x": 330,
+      "y": 300
+    },
+    {
+      "zone_id": "coaches_club",
+      "sections": [
+        "111C",
+        "112C",
+        "113C",
+        "114C",
+        "115C"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": true,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "EY Coaches Club",
+        "Field level premium club behind home sideline"
+      ],
+      "x": 440,
+      "y": 290
+    },
+    {
+      "zone_id": "commissioners_club",
+      "sections": [],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "Commissioner's Club suite",
+        "Premium VIP suites lobby"
+      ],
+      "x": 360,
+      "y": 280
+    },
+    {
+      "zone_id": "corona_beach_club",
+      "sections": [],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Corona Beach Club",
+        "East side mezzanine premium club",
+        "lounge attached to section 207C",
+        "lounge attached to section 208",
+        "lounge attached to section 210",
+        "lounge attached to section 212"
+      ],
+      "x": 510,
+      "y": 320
+    },
+    {
+      "zone_id": "metlife_50_club",
+      "sections": [
+        "243C",
+        "244C",
+        "245C"
+      ],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "MetLife 50 Club",
+        "West side 200-level club area",
+        "lounge attached to section 242C"
+      ],
+      "x": 290,
+      "y": 280
+    },
+    {
+      "zone_id": "field_tunnel_north",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": true,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "North Main Tunnel",
+        "Team entrance tunnel north end"
+      ],
+      "x": 400,
+      "y": 270
+    },
+    {
+      "zone_id": "field_tunnel_south",
+      "sections": [],
+      "amenities": {
+        "restroom": false,
+        "food": false,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "South Field Tunnel",
+        "Ambulance tunnel access south"
+      ],
+      "x": 400,
+      "y": 330
+    },
+    {
+      "zone_id": "press_box",
+      "sections": [],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": true
+      },
+      "landmark_aliases": [
+        "Media Press Box",
+        "West side suite level media deck"
+      ],
+      "x": 300,
+      "y": 240
+    },
+    {
+      "zone_id": "stadium_green_room",
+      "sections": [],
+      "amenities": {
+        "restroom": true,
+        "food": true,
+        "merchandise": false,
+        "atm": false,
+        "first_aid": false,
+        "charging_station": false
+      },
+      "landmark_aliases": [
+        "Backstage Green Room",
+        "VVIP backstage tunnel locker area"
+      ],
+      "x": 360,
+      "y": 320
+    }
+  ],
+  "edges": [
+    {
+      "from": "gate_j_plaza",
+      "to": "gate_a_plaza",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_a_plaza",
+      "to": "gate_b_plaza",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_b_plaza",
+      "to": "gate_c_plaza",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_c_plaza",
+      "to": "gate_d_plaza",
+      "walk_time_minutes": 4,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_d_plaza",
+      "to": "gate_e_plaza",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_e_plaza",
+      "to": "gate_k_plaza",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_e_plaza",
+      "to": "gate_f_plaza",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_f_plaza",
+      "to": "gate_g_plaza",
+      "walk_time_minutes": 4,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_g_plaza",
+      "to": "gate_h_plaza",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_h_plaza",
+      "to": "gate_a_plaza",
+      "walk_time_minutes": 4,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_a_plaza",
+      "to": "concourse_100_north",
+      "walk_time_minutes": 4,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "gate_h_plaza",
+      "to": "concourse_100_north",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_b_plaza",
+      "to": "concourse_100_west",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_c_plaza",
+      "to": "concourse_100_southwest",
+      "walk_time_minutes": 4,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "gate_d_plaza",
+      "to": "concourse_100_south",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_f_plaza",
+      "to": "concourse_100_east",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "gate_g_plaza",
+      "to": "concourse_100_northeast",
+      "walk_time_minutes": 4,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "concourse_100_north",
+      "to": "concourse_100_northeast",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_northeast",
+      "to": "concourse_100_east",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_east",
+      "to": "concourse_100_south",
+      "walk_time_minutes": 4,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_south",
+      "to": "concourse_100_southwest",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_southwest",
+      "to": "concourse_100_west",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_west",
+      "to": "concourse_100_north",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_north",
+      "to": "concourse_200_north",
+      "walk_time_minutes": 4,
+      "accessibility": "elevator"
+    },
+    {
+      "from": "concourse_100_west",
+      "to": "concourse_200_west",
+      "walk_time_minutes": 5,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "concourse_100_south",
+      "to": "concourse_200_south",
+      "walk_time_minutes": 4,
+      "accessibility": "elevator"
+    },
+    {
+      "from": "concourse_100_east",
+      "to": "concourse_200_east",
+      "walk_time_minutes": 5,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "concourse_200_north",
+      "to": "concourse_200_northeast",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_northeast",
+      "to": "concourse_200_east",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_east",
+      "to": "concourse_200_south",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_south",
+      "to": "concourse_200_southwest",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_southwest",
+      "to": "concourse_200_west",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_west",
+      "to": "concourse_200_north",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_north",
+      "to": "concourse_300_north",
+      "walk_time_minutes": 4,
+      "accessibility": "elevator"
+    },
+    {
+      "from": "concourse_200_west",
+      "to": "concourse_300_west",
+      "walk_time_minutes": 6,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "concourse_200_south",
+      "to": "concourse_300_south",
+      "walk_time_minutes": 4,
+      "accessibility": "elevator"
+    },
+    {
+      "from": "concourse_200_east",
+      "to": "concourse_300_east",
+      "walk_time_minutes": 6,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "concourse_300_north",
+      "to": "concourse_300_northeast",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_300_northeast",
+      "to": "concourse_300_east",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_300_east",
+      "to": "concourse_300_south",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_300_south",
+      "to": "concourse_300_southwest",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_300_southwest",
+      "to": "concourse_300_west",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_300_west",
+      "to": "concourse_300_north",
+      "walk_time_minutes": 3,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_100_east",
+      "to": "coaches_club",
+      "walk_time_minutes": 2,
+      "accessibility": "elevator"
+    },
+    {
+      "from": "concourse_200_east",
+      "to": "corona_beach_club",
+      "walk_time_minutes": 1,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_200_west",
+      "to": "metlife_50_club",
+      "walk_time_minutes": 1,
+      "accessibility": "level"
+    },
+    {
+      "from": "commissioners_club",
+      "to": "concourse_200_west",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    },
+    {
+      "from": "concourse_300_west",
+      "to": "press_box",
+      "walk_time_minutes": 3,
+      "accessibility": "elevator"
+    },
+    {
+      "from": "field_tunnel_north",
+      "to": "concourse_100_north",
+      "walk_time_minutes": 3,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "field_tunnel_south",
+      "to": "concourse_100_south",
+      "walk_time_minutes": 3,
+      "accessibility": "ramp"
+    },
+    {
+      "from": "field_tunnel_north",
+      "to": "stadium_green_room",
+      "walk_time_minutes": 2,
+      "accessibility": "level"
+    }
+  ]
+}
