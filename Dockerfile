@@ -9,6 +9,7 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY app ./app
+COPY data ./data
 
 RUN pip install --upgrade pip \
  && pip install .

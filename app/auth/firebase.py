@@ -18,14 +18,11 @@ from fastapi import Depends, Header, HTTPException, status
 from firebase_admin import auth as firebase_auth
 from firebase_admin import credentials
 
+from app.errors import error_payload
+
 _INIT_LOCK = threading.Lock()
 
-_ERROR_PAYLOAD_INVALID = {
-    "type": "error",
-    "category": "permanent",
-    "message": "Sign-in required. Please refresh the page to continue.",
-    "detail": None,
-}
+_ERROR_MESSAGE = "Sign-in required. Please refresh the page to continue."
 
 
 def _ensure_firebase_initialized() -> None:
@@ -41,9 +38,7 @@ def _ensure_firebase_initialized() -> None:
 
 
 def _reject(detail_message: str | None = None) -> HTTPException:
-    payload = dict(_ERROR_PAYLOAD_INVALID)
-    if detail_message and not os.environ.get("K_SERVICE"):
-        payload["detail"] = detail_message
+    payload = error_payload("permanent", _ERROR_MESSAGE, detail_message)
     return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=payload)
 
 

@@ -208,15 +208,45 @@ def claim_11_intent_agent_union() -> Result:
 
 
 def claim_12_six_endpoints() -> Result:
-    return SKIP, "not yet applicable — Phase 4 (endpoints)"
+    routes = _read(REPO_ROOT / "app" / "routes.py")
+    main_py = _read(REPO_ROOT / "app" / "main.py")
+    if routes is None or main_py is None:
+        return SKIP, "endpoints not yet declared"
+    expected = [
+        ('@router.post("/profile")', routes),
+        ('@router.get("/profile")', routes),
+        ('@router.post("/navigate")', routes),
+        ('@router.post("/staff/closures")', routes),
+        ('@router.get("/staff/closures")', routes),
+        ('@app.get("/health")', main_py),
+    ]
+    missing = [needle for needle, source in expected if needle not in source]
+    if missing:
+        return FAIL, f"expected endpoint declarations missing: {missing}"
+    return PASS, "six endpoints declared per Entry #19"
 
 
 def claim_13_fan_auth() -> Result:
-    return SKIP, "auth dependency exists (Phase 1c); endpoint wiring lands in Phase 4"
+    routes = _read(REPO_ROOT / "app" / "routes.py")
+    if routes is None:
+        return SKIP, "app/routes.py not present yet"
+    if "verify_fan_token" not in routes or "FanUid" not in routes:
+        return FAIL, "fan endpoints do not depend on verify_fan_token / FanUid"
+    return PASS, "fan endpoints depend on verify_fan_token (Firebase Anonymous)"
 
 
 def claim_14_staff_auth() -> Result:
-    return SKIP, "STAFF_TOKEN dependency + endpoint wiring lands in Phase 4"
+    staff = _read(REPO_ROOT / "app" / "auth" / "staff.py")
+    routes = _read(REPO_ROOT / "app" / "routes.py")
+    if staff is None or routes is None:
+        return SKIP, "staff auth not yet present"
+    if 'os.environ.get("STAFF_TOKEN")' not in staff and "os.environ['STAFF_TOKEN']" not in staff:
+        return FAIL, "staff auth does not read STAFF_TOKEN env var"
+    if "hmac.compare_digest" not in staff:
+        return FAIL, "staff token comparison is not constant-time (hmac.compare_digest)"
+    if "verify_staff_token" not in routes:
+        return FAIL, "staff endpoints do not depend on verify_staff_token"
+    return PASS, "staff endpoints use STAFF_TOKEN with constant-time compare"
 
 
 def claim_17_model_tier() -> Result:
@@ -235,15 +265,39 @@ def claim_17_model_tier() -> Result:
 
 
 def claim_18_graph_static_load() -> Result:
-    return SKIP, "loader module exists; not yet invoked at app startup — Phase 4"
+    main_py = _read(REPO_ROOT / "app" / "main.py")
+    if main_py is None:
+        return SKIP, "app/main.py not present yet"
+    if "load_default_graph()" not in main_py:
+        return FAIL, "app/main.py does not call load_default_graph() at startup"
+    if "app.state.graph" not in main_py:
+        return FAIL, "app/main.py does not stash the graph on app.state.graph"
+    return PASS, "graph loaded once at startup and stashed on app.state.graph"
 
 
 def claim_19_venue_state_per_request() -> Result:
-    return SKIP, "not yet applicable — Phase 4 (navigate handler)"
+    routes = _read(REPO_ROOT / "app" / "routes.py")
+    if routes is None:
+        return SKIP, "app/routes.py not present yet"
+    nav_match = re.search(
+        r"def post_navigate\b.*?(?=\ndef |\Z)", routes, flags=re.DOTALL
+    )
+    if not nav_match:
+        return FAIL, "post_navigate handler not found in app/routes.py"
+    if "venue_repo.read_state" not in nav_match.group(0):
+        return FAIL, "post_navigate does not call venue_repo.read_state on every request"
+    return PASS, "post_navigate reads venue_state fresh via read_state each call"
 
 
 def claim_20_k_service_error_detail() -> Result:
-    return SKIP, "not yet applicable — Phase 4 (error contract)"
+    errors = _read(REPO_ROOT / "app" / "errors.py")
+    if errors is None:
+        return SKIP, "app/errors.py not present yet"
+    if 'os.environ.get("K_SERVICE")' not in errors and "os.environ['K_SERVICE']" not in errors:
+        return FAIL, "app/errors.py does not gate detail on the K_SERVICE env var"
+    if '"type": "error"' not in errors or '"category"' not in errors:
+        return FAIL, "app/errors.py does not emit the Entry #23 error shape"
+    return PASS, "errors.py gates detail on K_SERVICE and emits Entry #23 shape"
 
 
 CLAIMS: list[tuple[int, str, Callable[[], Result]]] = [
