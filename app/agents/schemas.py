@@ -20,9 +20,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.models.enums import DEFAULT_LANGUAGE, AccessibilityFlag, PreferredLanguage
+from app.models.enums import (
+    DEFAULT_LANGUAGE,
+    AccessibilityFlag,
+    AmenityType,
+    PreferredLanguage,
+)
 
 
 class _StrictModel(BaseModel):
@@ -47,8 +52,20 @@ class ConversationTurn(_StrictModel):
 class ResolvedRequest(_StrictModel):
     type: Literal["resolved"] = "resolved"
     origin: str
-    destination: str
+    destination: str | None = None
+    destination_amenity_type: AmenityType | None = None
     rationale: str = ""
+
+    @model_validator(mode="after")
+    def _exactly_one_destination(self) -> ResolvedRequest:
+        has_zone = self.destination is not None
+        has_amenity = self.destination_amenity_type is not None
+        if has_zone == has_amenity:
+            raise ValueError(
+                "exactly one of 'destination' or 'destination_amenity_type' "
+                "must be set (Entry #28)"
+            )
+        return self
 
 
 class AmbiguousRequest(_StrictModel):

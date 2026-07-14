@@ -35,6 +35,7 @@ from app.pathfinding.engine import (
     RouteBlocked,
     RouteFound,
     RouteImpossible,
+    find_nearest_amenity,
     find_route,
 )
 
@@ -316,3 +317,180 @@ def test_closed_edge_direction_agnostic(small_graph: Graph) -> None:
     pairs = list(zip(result.nodes, result.nodes[1:], strict=False))
     assert ("c", "g") not in pairs
     assert ("g", "c") not in pairs
+
+
+# ---------------------------------------------------------------------------
+# find_nearest_amenity (DECISIONS.md Entry #28)
+# ---------------------------------------------------------------------------
+
+
+def _with_amenities(base: Graph, zone_to_amenity: dict[str, str]) -> Graph:
+    """Clone ``base``, flipping ``amenities[amenity]`` to True for each zone."""
+    new_nodes: dict[str, Node] = {}
+    for zone_id, node in base.nodes.items():
+        amenities = dict(node.amenities)
+        if zone_id in zone_to_amenity:
+            amenities[zone_to_amenity[zone_id]] = True
+        new_nodes[zone_id] = Node(
+            zone_id=node.zone_id,
+            sections=node.sections,
+            amenities=amenities,
+            landmark_aliases=node.landmark_aliases,
+            x=node.x,
+            y=node.y,
+        )
+    return Graph(nodes=new_nodes, edges=base.edges)
+
+
+def test_find_nearest_amenity_basic(small_graph: Graph) -> None:
+    """Single amenity-bearing zone → route directly to it."""
+    graph = _with_amenities(small_graph, {"b": "restroom"})
+    result = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="restroom",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    assert isinstance(result, RouteFound)
+    assert result.destination == "b"
+    assert result.total_walk_time_minutes == 2.0
+
+
+def test_find_nearest_amenity_picks_lowest_walk_time(small_graph: Graph) -> None:
+    """Two candidates — must pick the one with lower total walk_time."""
+    graph = _with_amenities(small_graph, {"b": "food", "g": "food"})
+    result = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="food",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    assert isinstance(result, RouteFound)
+    # 'b' at 2 min beats 'g' at 7 min.
+    assert result.destination == "b"
+    assert result.total_walk_time_minutes == 2.0
+
+
+def test_find_nearest_amenity_accessibility_filter_changes_choice(
+    small_graph: Graph,
+) -> None:
+    """Accessibility flag must exclude candidates only reachable via stairs.
+
+    Strip a-d, d-e, and e-f so 'e' is reachable only via the stairs_only b-e
+    edge. Without a flag, 'e' (walk 3 via stairs) beats 'g' (walk 7 via stairs).
+    With a flag, 'e' becomes unreachable, so we fall back to 'g' via the
+    a-b-c-f-g accessible path (walk 11)."""
+    stripped = Graph(
+        nodes=dict(small_graph.nodes),
+        edges=tuple(
+            e for e in small_graph.edges
+            if not (e.from_id == "a" and e.to_id == "d")
+            and not (e.from_id == "d" and e.to_id == "e")
+            and not (e.from_id == "e" and e.to_id == "f")
+        ),
+    )
+    graph = _with_amenities(stripped, {"e": "atm", "g": "atm"})
+    unconstrained = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="atm",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    assert isinstance(unconstrained, RouteFound)
+    assert unconstrained.destination == "e"
+    constrained = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="atm",
+        accessibility_flags=["wheelchair"],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    assert isinstance(constrained, RouteFound)
+    assert constrained.destination == "g"
+
+
+def test_find_nearest_amenity_closures_affect_choice(small_graph: Graph) -> None:
+    """Close the nearest amenity's approach — must pick the next-nearest."""
+    graph = _with_amenities(small_graph, {"b": "first_aid", "f": "first_aid"})
+    result = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="first_aid",
+        accessibility_flags=[],
+        closed_nodes={"b"},
+        closed_edges=set(),
+    )
+    assert isinstance(result, RouteFound)
+    # 'b' closed → must reroute to 'f' via a-d-e-f (2+1+3-ish path).
+    assert result.destination == "f"
+    assert "b" not in result.nodes
+
+
+def test_find_nearest_amenity_no_matching_zone(small_graph: Graph) -> None:
+    """No zone offers the requested amenity → RouteImpossible with reason."""
+    result = find_nearest_amenity(
+        small_graph,
+        origin="a",
+        amenity_type="merchandise",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    assert isinstance(result, RouteImpossible)
+    assert "merchandise" in result.reason
+    assert "no zone" in result.reason
+
+
+def test_find_nearest_amenity_unknown_origin(small_graph: Graph) -> None:
+    """Unknown origin short-circuits to RouteImpossible."""
+    graph = _with_amenities(small_graph, {"b": "restroom"})
+    result = find_nearest_amenity(
+        graph,
+        origin="ghost",
+        amenity_type="restroom",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    assert isinstance(result, RouteImpossible)
+    assert "ghost" in result.reason
+
+
+def test_find_nearest_amenity_all_candidates_blocked(small_graph: Graph) -> None:
+    """Sole candidate blocked → RouteBlocked with reason mentioning amenity."""
+    graph = _with_amenities(small_graph, {"g": "charging_station"})
+    result = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="charging_station",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges={("c", "g"), ("f", "g")},
+    )
+    assert isinstance(result, RouteBlocked)
+    assert "charging_station" in result.reason
+    assert "no reachable" in result.reason
+
+
+def test_find_nearest_amenity_only_reachable_via_island(small_graph: Graph) -> None:
+    """Sole candidate is on the disconnected 'island' node → RouteImpossible."""
+    graph = _with_amenities(small_graph, {"island": "food"})
+    result = find_nearest_amenity(
+        graph,
+        origin="a",
+        amenity_type="food",
+        accessibility_flags=[],
+        closed_nodes=set(),
+        closed_edges=set(),
+    )
+    # No RouteFound, no RouteBlocked (nothing was closed) — should be
+    # RouteImpossible via the "no reachable" fallback path.
+    assert isinstance(result, RouteImpossible)
+    assert "food" in result.reason

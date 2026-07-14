@@ -75,3 +75,16 @@ def test_module_imports_without_env_file(tmp_path, monkeypatch: pytest.MonkeyPat
         import app.main as reloaded_main  # noqa: F401
 
         spy.assert_called_once()
+
+
+def test_root_redirects_to_fan_html() -> None:
+    """GET / must land the browser on /static/fan.html (Entry #28)."""
+    response = _client().get("/", follow_redirects=False)
+    assert response.status_code in (302, 303, 307)
+    assert response.headers["location"] == "/static/fan.html"
+
+
+def test_root_redirect_unauthenticated() -> None:
+    """GET / is unauthenticated — no Authorization header needed."""
+    response = _client().get("/", follow_redirects=False)
+    assert response.status_code in (302, 303, 307)

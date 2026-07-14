@@ -168,6 +168,67 @@ def test_navigation_validation_failure_raises(mock_pro, small_graph, fan):
         parse_navigation_request("go", fan, [], small_graph)
 
 
+@patch("app.agents.intent.pro")
+def test_navigation_resolved_amenity_only(mock_pro, small_graph, fan):
+    """Entry #28 — amenity-type destination without a specific zone."""
+    mock_pro.return_value = _mock_client(
+        json.dumps(
+            {
+                "type": "resolved",
+                "origin": "a",
+                "destination_amenity_type": "restroom",
+                "rationale": "fan asked for closest restroom",
+            }
+        )
+    )
+    result = parse_navigation_request(
+        "where's the closest restroom?", fan, [], small_graph
+    )
+    assert isinstance(result, ResolvedRequest)
+    assert result.origin == "a"
+    assert result.destination is None
+    assert result.destination_amenity_type is not None
+    assert result.destination_amenity_type.value == "restroom"
+
+
+@patch("app.agents.intent.pro")
+def test_navigation_resolved_rejects_both_destination_fields(
+    mock_pro, small_graph, fan
+):
+    """Entry #28 — model_validator forbids setting both destination fields."""
+    mock_pro.return_value = _mock_client(
+        json.dumps(
+            {
+                "type": "resolved",
+                "origin": "a",
+                "destination": "g",
+                "destination_amenity_type": "restroom",
+                "rationale": "",
+            }
+        )
+    )
+    with pytest.raises(GeminiServiceError, match="failed validation"):
+        parse_navigation_request("go somewhere", fan, [], small_graph)
+
+
+@patch("app.agents.intent.pro")
+def test_navigation_resolved_rejects_neither_destination_field(
+    mock_pro, small_graph, fan
+):
+    """Entry #28 — model_validator forbids leaving both destination fields unset."""
+    mock_pro.return_value = _mock_client(
+        json.dumps(
+            {
+                "type": "resolved",
+                "origin": "a",
+                "rationale": "",
+            }
+        )
+    )
+    with pytest.raises(GeminiServiceError, match="failed validation"):
+        parse_navigation_request("go", fan, [], small_graph)
+
+
 # ---------------------------------------------------------------------------
 # Profile extraction: 3 variants (Entry #7)
 # ---------------------------------------------------------------------------

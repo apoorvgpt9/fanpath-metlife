@@ -46,7 +46,7 @@ phrases in {language} (e.g. "lower_west_concourse_a" -> a natural phrase for
 "lower west concourse A"). Include the total walk time.
 
 The fan's original query: <<<{query}>>>
-
+{amenity_note}
 Route (do NOT invent nodes; use exactly this order):
 {route_lines}
 
@@ -54,6 +54,15 @@ Total walk time: {total_minutes} minutes.
 
 Return prose only — no JSON, no markdown headers.
 """
+
+
+_AMENITY_NOTE_TEMPLATE = (
+    "\nThe fan asked for a KIND of place ('{amenity_type}'), not a specific zone. "
+    "The pathfinding layer chose destination zone '{destination}' as the nearest "
+    "matching '{amenity_type}'. Your directions MUST name this destination zone "
+    "explicitly (as a natural phrase in {language}) so the fan knows which "
+    "specific {amenity_type} they're being routed to.\n"
+)
 
 
 _BLOCKED_PROMPT_TEMPLATE = """You are the Guide Agent for MetLife Stadium indoor navigation.
@@ -94,14 +103,29 @@ def _language_name(code: str) -> str:
     }.get(code, "English")
 
 
-def _explain_found(result: RouteFound, query: str, profile: FanProfile) -> str:
+def _explain_found(
+    result: RouteFound,
+    query: str,
+    profile: FanProfile,
+    amenity_type: str | None,
+) -> str:
     code = _language_code(profile)
     route_lines = "\n".join(f"  {i + 1}. {n}" for i, n in enumerate(result.nodes))
+    amenity_note = (
+        _AMENITY_NOTE_TEMPLATE.format(
+            amenity_type=amenity_type,
+            destination=result.destination,
+            language=_language_name(code),
+        )
+        if amenity_type is not None
+        else ""
+    )
     prompt = _FOUND_PROMPT_TEMPLATE.format(
         language=_language_name(code),
         query=query.strip(),
         route_lines=route_lines,
         total_minutes=result.total_walk_time_minutes,
+        amenity_note=amenity_note,
     )
     body = flash().generate_content(prompt).strip()
     if result.traverses_stairs_only and not profile.accessibility_flags:
@@ -126,10 +150,11 @@ def explain_route(
     result: RouteFound | RouteBlocked,
     query: str,
     profile: FanProfile,
+    amenity_type: str | None = None,
 ) -> str:
     """Produce NL directions or an Entry #17 blocked-route explanation."""
     if isinstance(result, RouteFound):
-        return _explain_found(result, query, profile)
+        return _explain_found(result, query, profile, amenity_type)
     return _explain_blocked(result, query, profile)
 
 

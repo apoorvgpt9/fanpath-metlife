@@ -241,3 +241,87 @@ def find_route(
         total_walk_time_minutes=total,
         traverses_stairs_only=traverses_stairs,
     )
+
+
+def _candidate_zones_for_amenity(graph: Graph, amenity_type: str) -> list[str]:
+    return [
+        zone_id
+        for zone_id, node in graph.nodes.items()
+        if node.amenities.get(amenity_type)
+    ]
+
+
+def _select_best_amenity_result(
+    origin: str,
+    amenity_type: str,
+    candidate_results: list[RouteResult],
+) -> RouteResult:
+    """Pick the lowest-walk-time RouteFound; else the most informative blocker."""
+    found = [r for r in candidate_results if isinstance(r, RouteFound)]
+    if found:
+        best = min(found, key=lambda r: r.total_walk_time_minutes)
+        return best
+    blocked = [r for r in candidate_results if isinstance(r, RouteBlocked)]
+    if blocked:
+        first = blocked[0]
+        return RouteBlocked(
+            origin=origin,
+            destination=first.destination,
+            reason=(
+                f"no reachable '{amenity_type}' amenity from '{origin}': "
+                f"nearest candidate blocked — {first.reason}"
+            ),
+        )
+    return RouteImpossible(
+        origin=origin,
+        destination="",
+        reason=(
+            f"no reachable '{amenity_type}' amenity from '{origin}' "
+            "under current graph state"
+        ),
+    )
+
+
+def find_nearest_amenity(
+    graph: Graph,
+    origin: str,
+    amenity_type: str,
+    accessibility_flags: list[str],
+    closed_nodes: set[str],
+    closed_edges: set[tuple[str, str]],
+) -> RouteResult:
+    """Resolve an amenity-type destination to the nearest amenity-bearing zone.
+
+    Loops over zones with ``amenities[amenity_type] == True``, calls
+    :func:`find_route` to each, returns the lowest-walk-time :class:`RouteFound`.
+    36-node graph — a linear scan is plenty (Entry #28). If no candidate is
+    reachable, returns the most informative failure (prefers ``RouteBlocked``
+    with a real reason over generic ``RouteImpossible``).
+    """
+    if origin not in graph.nodes:
+        return RouteImpossible(
+            origin=origin,
+            destination="",
+            reason=f"unknown origin zone_id: {origin!r}",
+        )
+    candidates = _candidate_zones_for_amenity(graph, amenity_type)
+    if not candidates:
+        return RouteImpossible(
+            origin=origin,
+            destination="",
+            reason=(
+                f"no zone in the graph offers amenity '{amenity_type}'"
+            ),
+        )
+    results: list[RouteResult] = [
+        find_route(
+            graph,
+            origin=origin,
+            destination=candidate,
+            accessibility_flags=accessibility_flags,
+            closed_nodes=closed_nodes,
+            closed_edges=closed_edges,
+        )
+        for candidate in candidates
+    ]
+    return _select_best_amenity_result(origin, amenity_type, results)

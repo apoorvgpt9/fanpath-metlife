@@ -335,6 +335,27 @@ def claim_22_svg_renderer_deterministic() -> Result:
     return PASS, "svg_renderer.py is Gemini-free; wired into /navigate via routes.py"
 
 
+def claim_23_amenity_resolution() -> Result:
+    """Entry #28: amenity-type destination resolution.
+
+    ``destination_amenity_type`` must be a field on ``ResolvedRequest`` (mutually
+    exclusive with ``destination``), and ``find_nearest_amenity`` must exist in
+    the pathfinding engine and be wired into ``app/routes.py``.
+    """
+    schemas = _read(REPO_ROOT / "app" / "agents" / "schemas.py") or ""
+    if "destination_amenity_type" not in schemas:
+        return FAIL, "app/agents/schemas.py missing destination_amenity_type on ResolvedRequest"
+    if "@model_validator" not in schemas:
+        return FAIL, "schemas.py missing @model_validator enforcing mutual exclusion"
+    engine = _read(REPO_ROOT / "app" / "pathfinding" / "engine.py") or ""
+    if "def find_nearest_amenity" not in engine:
+        return FAIL, "pathfinding/engine.py missing find_nearest_amenity"
+    routes = _read(REPO_ROOT / "app" / "routes.py") or ""
+    if "find_nearest_amenity" not in routes:
+        return FAIL, "app/routes.py does not call find_nearest_amenity"
+    return PASS, "amenity-type destinations resolved via find_nearest_amenity (Entry #28)"
+
+
 CLAIMS: list[tuple[int, str, Callable[[], Result]]] = [
     (1, "coverage floor is 95%", claim_01_coverage_floor),
     (2, "ruff select includes C901, PLR0912, PLR0915", claim_02_ruff_select),
@@ -358,6 +379,7 @@ CLAIMS: list[tuple[int, str, Callable[[], Result]]] = [
     (20, "error contract uses K_SERVICE for detail toggling", claim_20_k_service_error_detail),
     (21, "frontend is static HTML + vanilla JS (Entry #20)", claim_21_static_frontend),
     (22, "SVG rendering is deterministic (Entry #12)", claim_22_svg_renderer_deterministic),
+    (23, "amenity-type destination resolution (Entry #28)", claim_23_amenity_resolution),
 ]
 
 

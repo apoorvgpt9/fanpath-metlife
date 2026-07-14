@@ -136,15 +136,40 @@ zone_id you return must appear verbatim in this list.
 
 {zones_block}
 
+The graph also has six amenity types. When the fan asks for a KIND of place
+(e.g. "closest restroom", "any food?", "an ATM") rather than naming a specific
+zone or landmark, resolve the destination as the amenity type instead of a
+zone_id — the pathfinding layer will pick the nearest matching zone.
+
+Amenity types (use these exact values):
+- restroom
+- food
+- merchandise
+- atm
+- first_aid
+- charging_station
+
 Fan's new query: <<<{query}>>>
 
 Return STRICT JSON (no markdown, no prose) matching EXACTLY one of these shapes:
 
-Resolved (both origin and destination are unambiguous zone_ids from the list):
+Resolved with a specific destination zone (both origin and destination are
+unambiguous zone_ids from the list):
   {{"type":"resolved",
     "origin":"<zone_id>",
     "destination":"<zone_id>",
     "rationale":"<short>"}}
+
+Resolved with an amenity-type destination (origin is a zone_id, destination is
+the KIND of place — leave "destination" absent or null, set
+"destination_amenity_type" instead):
+  {{"type":"resolved",
+    "origin":"<zone_id>",
+    "destination_amenity_type":"<one of the six amenity types>",
+    "rationale":"<short>"}}
+
+Exactly ONE of "destination" or "destination_amenity_type" must be set. Never
+both.
 
 Ambiguous (multiple plausible destinations OR origin — offer 2-4 candidates):
   {{"type":"ambiguous",
@@ -204,7 +229,10 @@ def _dispatch_navigation(data: dict[str, Any], graph: Graph) -> NavigationParse:
     try:
         if kind == "resolved":
             parsed = ResolvedRequest.model_validate(data)
-            _assert_zones_exist(graph, [parsed.origin, parsed.destination])
+            zones_to_check = [parsed.origin]
+            if parsed.destination is not None:
+                zones_to_check.append(parsed.destination)
+            _assert_zones_exist(graph, zones_to_check)
             return parsed
         if kind == "ambiguous":
             parsed_a = AmbiguousRequest.model_validate(data)

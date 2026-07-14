@@ -25,7 +25,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -142,6 +142,17 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         """Cloud Run health probe. Unauthenticated, unlimited by design."""
         return {"status": "ok"}
+
+    @app.get("/", include_in_schema=False)
+    def root() -> RedirectResponse:
+        """Convenience redirect for browsers hitting the bare origin.
+
+        Unauthenticated, unlimited — matches the treatment of ``/health``.
+        Fan clients open ``/static/fan.html`` directly; this exists only so a
+        bare visit to the Cloud Run URL lands on the fan chat instead of a
+        confusing JSON 404 envelope (Entry #23 shape but wrong context).
+        """
+        return RedirectResponse(url="/static/fan.html")
 
     return app
 

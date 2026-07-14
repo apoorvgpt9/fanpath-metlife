@@ -42,7 +42,13 @@ from app.firestore import fans as fans_repo
 from app.firestore import venue_state as venue_repo
 from app.graph.edge_id import edge_id, parse_edge_id
 from app.graph.loader import Graph
-from app.pathfinding.engine import RouteBlocked, RouteFound, RouteImpossible, find_route
+from app.pathfinding.engine import (
+    RouteBlocked,
+    RouteFound,
+    RouteImpossible,
+    find_nearest_amenity,
+    find_route,
+)
 from app.rate_limit import FAN_LIMIT, STAFF_LIMIT, limiter
 from app.rendering.svg_renderer import render_route
 from app.schemas import (
@@ -156,6 +162,34 @@ def _decode_closures(state: venue_repo.VenueState) -> tuple[set[str], set[tuple[
     return closed_nodes, closed_edges
 
 
+def _resolve_route(
+    parsed: ResolvedRequest,
+    profile: fans_repo.FanProfile,
+    graph: Graph,
+    closed_nodes: set[str],
+    closed_edges: set[tuple[str, str]],
+):
+    flags = [f.value for f in profile.accessibility_flags]
+    if parsed.destination_amenity_type is not None:
+        return find_nearest_amenity(
+            graph,
+            origin=parsed.origin,
+            amenity_type=parsed.destination_amenity_type.value,
+            accessibility_flags=flags,
+            closed_nodes=closed_nodes,
+            closed_edges=closed_edges,
+        )
+    assert parsed.destination is not None
+    return find_route(
+        graph,
+        origin=parsed.origin,
+        destination=parsed.destination,
+        accessibility_flags=flags,
+        closed_nodes=closed_nodes,
+        closed_edges=closed_edges,
+    )
+
+
 def _handle_navigation_parse(
     parsed: ResolvedRequest | AmbiguousRequest | UnresolvableRequest,
     body: NavigateRequest,
@@ -168,18 +202,17 @@ def _handle_navigation_parse(
         return NavigateResponse(directions=parsed.clarification_question, route_image=None)
     if isinstance(parsed, UnresolvableRequest):
         raise_error(status.HTTP_400_BAD_REQUEST, "permanent", parsed.reason)
-    route = find_route(
-        graph,
-        origin=parsed.origin,
-        destination=parsed.destination,
-        accessibility_flags=[f.value for f in profile.accessibility_flags],
-        closed_nodes=closed_nodes,
-        closed_edges=closed_edges,
-    )
+    route = _resolve_route(parsed, profile, graph, closed_nodes, closed_edges)
     if isinstance(route, RouteImpossible):
         raise_error(status.HTTP_400_BAD_REQUEST, "permanent", route.reason)
     assert isinstance(route, RouteFound | RouteBlocked)
-    directions = explain_route(route, body.query, profile)
+    amenity = parsed.destination_amenity_type
+    directions = explain_route(
+        route,
+        body.query,
+        profile,
+        amenity_type=amenity.value if amenity is not None else None,
+    )
     image = (
         render_route(route, graph, closed_nodes, closed_edges)
         if isinstance(route, RouteFound)

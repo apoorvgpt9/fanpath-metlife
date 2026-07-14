@@ -328,6 +328,43 @@ def test_navigate_route_blocked_returns_200_with_prose(
     assert body["route_image"] is None
 
 
+def test_navigate_amenity_type_destination_resolves_zone(
+    integration_client: TestClient, fake_firestore: FakeFirestoreClient, test_uid: str
+) -> None:
+    """Entry #28 — amenity-type destination routes to nearest matching zone.
+
+    The Intent Agent returns an amenity-type destination (no specific zone),
+    and the pathfinding layer resolves it to the nearest zone bearing that
+    amenity. The Guide Agent's prompt names the resolved destination zone."""
+    _seed_default_profile(fake_firestore, test_uid)
+    pro_client, flash_client = _fake_gemini(
+        {
+            "type": "resolved",
+            "origin": "gate_a_plaza",
+            "destination_amenity_type": "restroom",
+            "rationale": "closest restroom from gate A",
+        },
+        flash_text="Head to the North Lower Concourse — restrooms are just off it.",
+    )
+    with patch("app.agents.intent.pro", return_value=pro_client), patch(
+        "app.agents.guide.flash", return_value=flash_client
+    ):
+        response = integration_client.post(
+            "/navigate",
+            headers={"Authorization": "Bearer fan-tok"},
+            json={"query": "where's the nearest restroom?", "history": []},
+        )
+    assert response.status_code == 200
+    body = response.json()
+    assert isinstance(body["route_image"], str)
+    assert body["route_image"].startswith("data:image/svg+xml;base64,")
+    # Guide prompt must have been built with the amenity_note — inspect the
+    # prompt passed to the flash client.
+    guide_prompt = flash_client.generate_content.call_args.args[0]
+    assert "restroom" in guide_prompt
+    assert "KIND of place" in guide_prompt
+
+
 # ---------------------------------------------------------------------------
 # Auth regression — the double-wrap bug from Phase 3
 # ---------------------------------------------------------------------------

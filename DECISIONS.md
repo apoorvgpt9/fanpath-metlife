@@ -612,6 +612,32 @@ Staff toggle updates the arrays. One Firestore read per navigation request to ge
 
 ---
 
+## Entry #28 — Amenity-type destination resolution: mutually-exclusive field + reused single-pair shortest path
+
+**Status:** Active. **Not a supersession** — fills a gap left by Entry #9 and Entry #11, which together specified that navigation queries could target either a specific `zone_id` OR a KIND of place ("nearest restroom", "any food?", "an ATM"), but which the code did not actually implement until this entry.
+
+**Trigger:** Phase 4C gap-remediation review. The Intent Agent's job description (Entry #9) and the six-value `AmenityType` enum (Entry #11) both anticipated amenity-type destinations, and DECISIONS.md's hard-case grilling explicitly includes "closest restroom" queries. The pre-#28 `ResolvedRequest` had a single `destination: str` field with no way to encode an amenity-type destination — Gemini either invented a zone_id (Entry #9 violation, correctly rejected by the ground-truth check) or emitted `unresolvable`, neither of which is the actual answer to "closest restroom." The gap is closed here, before Phase 5.
+
+**Decision:**
+
+- **`ResolvedRequest` gains an optional `destination_amenity_type: AmenityType | None = None` field, mutually exclusive with `destination` (now `str | None = None`).** Exactly one of the two must be set. Enforced by a Pydantic v2 `@model_validator(mode="after")` on the schema — not a downstream assertion — so malformed model output is rejected at the parse boundary, before it ever reaches pathfinding or routing.
+
+- **Pathfinding gains `find_nearest_amenity(graph, origin, amenity_type, accessibility_flags, closed_nodes, closed_edges) -> RouteResult`.** It loops over zones with `amenities[amenity_type] == True`, calls the existing `find_route` for each candidate, and returns the lowest-`total_walk_time_minutes` `RouteFound`. If every candidate fails, it returns the most informative failure — a `RouteBlocked` with a specific reason if any candidate produced one, otherwise a `RouteImpossible`. **No multi-source shortest path.** 36 nodes × up to 29 candidates (food, the densest amenity) is trivially small; the added algorithm surface is not worth the complexity in this scope.
+
+- **`app/routes._handle_navigation_parse` branches on `parsed.destination_amenity_type is not None`** and calls `find_nearest_amenity` in that branch, `find_route` in the other. Everything downstream — the `RouteFound | RouteBlocked` handling, the SVG rendering, the Guide Agent's directions — is unchanged.
+
+- **Guide Agent (`explain_route`) accepts an optional `amenity_type: str | None`** and, when set, instructs the model to name the resolved destination zone explicitly in the response. The fan asked for "food," not zone `concourse_100_north`; the reply must tell them **which** food destination was chosen. The zone name is already on `RouteFound.destination` — no signature change to `RouteFound` is needed. The prompt-injection of the destination zone_id keeps the "model never invents a route" contract (Entry #9): the agent describes what the deterministic layer produced, it doesn't pick the destination.
+
+- **Intent Agent prompt is extended** to teach Gemini the six amenity types verbatim and the mutually-exclusive JSON shape. The "must not invent a zone_id" grounding is preserved — the amenity path just allows leaving `destination` unset when the query is a kind-of-place.
+
+**Verification (`make verify-docs` claim #23):** greps `find_nearest_amenity` in `app/pathfinding/engine.py` and `destination_amenity_type` in `app/agents/schemas.py`.
+
+**Why not a supersession of Entry #9:** Entry #9 already stated that Intent-Agent output is "destination node **or amenity type**." The code did not honor the "or amenity type" half; this entry closes the gap. Nothing in Entry #9 is being replaced or contradicted — the existing decision is being *fulfilled*.
+
+**Why not a supersession of Entry #17 (RouteBlocked handling):** the amenity path reuses `find_route`, so `RouteBlocked` bubbles up unchanged. The only wrinkle is aggregation across multiple candidates: when every candidate is blocked, the response is a synthesized `RouteBlocked` naming the specific closure of the nearest reachable candidate. This is strictly more informative than a bare "no route" — it's the same Entry #17 spirit ("failure with explanation"), scaled to the amenity case.
+
+---
+
 ## Carryover lessons from CarbonSaathi (verified against repo, not assumed)
 
 **Carry forward (confirmed effective):**
