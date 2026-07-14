@@ -18,7 +18,7 @@ DECISIONS.md is the constitutional spec. This file is the running log of what ac
 | ----- | ---------------------------------------------------- | ------------------- | ------------------ | ----------------- | ------------------------------------------------- |
 | 0     | Skeleton, config, Day-1 deploy                       | DONE                | 2026-07-13         | 2026-07-13        | Live URL green; commit c81776d; intent validation passed with 3 non-blocking notes |
 | 1     | Graph (blocker) + auth + schema                      | DONE                | 2026-07-13         | 2026-07-13         | 36 nodes, 54 edges (post-patch); intent validation passed for main build + patch; 11 PASS/9 SKIP/0 FAIL |
-| 2     | Pathfinding + Layer-2 tests                          | MACHINE-VALIDATED | 2026-07-13         | —                 | 19 pathfinding tests; engine 99%, loader 100%; 12 PASS/8 SKIP/0 FAIL |
+| 2     | Pathfinding + Layer-2 tests                          | DONE              | 2026-07-13         | 2026-07-13         | 19 pathfinding tests; engine 99%, loader 100%; 12 PASS/8 SKIP/0 FAIL; CI green, /health 200 confirmed |
 | 3     | Intent + Guide agents + Gemini pre-flight            | NOT STARTED  | —                  | —                 | Pre-flight before agent logic                     |
 | 4     | Endpoints + frontend + renderer + closures           | NOT STARTED  | —                  | —                 | Full app on live URL                              |
 | 5     | Presentation pass                                    | NOT STARTED  | —                  | —                 | Cheap-signal proxies                              |
