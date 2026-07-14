@@ -20,11 +20,13 @@ Key wiring notes:
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -37,10 +39,29 @@ from app.routes import router as api_router
 
 load_dotenv()
 
+_STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
+# CSP (Entry #20 + SECURITY.md §6). Firebase Auth JS SDK loads from
+# gstatic.com and calls identitytoolkit + securetoken. Everything else is
+# same-origin. No 'unsafe-inline' — style.css and fan.js/staff.js are
+# external files, not inline blocks. img-src allows data: so the inline
+# base64 SVG from /navigate renders.
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self' https://www.gstatic.com; "
+    "connect-src 'self' https://identitytoolkit.googleapis.com "
+    "https://securetoken.googleapis.com; "
+    "img-src 'self' data:; "
+    "style-src 'self'; "
+    "base-uri 'self'; "
+    "frame-ancestors 'none'"
+)
+
 _SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": _CSP,
 }
 
 
@@ -113,6 +134,9 @@ def create_app() -> FastAPI:
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.include_router(api_router)
+
+    if _STATIC_DIR.is_dir():
+        app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
     @app.get("/health")
     def health() -> dict[str, str]:

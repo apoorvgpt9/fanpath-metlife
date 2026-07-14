@@ -44,6 +44,7 @@ from app.graph.edge_id import edge_id, parse_edge_id
 from app.graph.loader import Graph
 from app.pathfinding.engine import RouteBlocked, RouteFound, RouteImpossible, find_route
 from app.rate_limit import FAN_LIMIT, STAFF_LIMIT, limiter
+from app.rendering.svg_renderer import render_route
 from app.schemas import (
     ClosureStateResponse,
     ClosureToggleRequest,
@@ -179,7 +180,12 @@ def _handle_navigation_parse(
         raise_error(status.HTTP_400_BAD_REQUEST, "permanent", route.reason)
     assert isinstance(route, RouteFound | RouteBlocked)
     directions = explain_route(route, body.query, profile)
-    return NavigateResponse(directions=directions, route_image=None)
+    image = (
+        render_route(route, graph, closed_nodes, closed_edges)
+        if isinstance(route, RouteFound)
+        else None
+    )
+    return NavigateResponse(directions=directions, route_image=image)
 
 
 @router.post("/navigate")

@@ -159,7 +159,8 @@ def test_navigate_resolved_returns_directions(
         )
     assert response.status_code == 200
     body = response.json()
-    assert body["route_image"] is None
+    assert isinstance(body["route_image"], str)
+    assert body["route_image"].startswith("data:image/svg+xml;base64,")
     assert "gate C" in body["directions"]
 
 
@@ -179,7 +180,9 @@ def test_navigate_ambiguous_returns_clarification(
             json={"query": "the gate", "history": []},
         )
     assert response.status_code == 200
-    assert response.json()["directions"] == "Do you mean gate A or gate C?"
+    body = response.json()
+    assert body["directions"] == "Do you mean gate A or gate C?"
+    assert body["route_image"] is None
 
 
 def test_navigate_unresolvable_returns_permanent_error(
@@ -286,9 +289,11 @@ def test_navigate_closed_edge_forces_detour_through_endpoint(
             json={"query": "gate B", "history": []},
         )
     # Endpoint decoded the closed edge (exercises _decode_closures parse loop)
-    # and returned a valid response — either detour or RouteBlocked prose.
+    # and returned a RouteFound (detour) — SVG must be present.
     assert response.status_code == 200
-    assert response.json()["route_image"] is None
+    body = response.json()
+    assert isinstance(body["route_image"], str)
+    assert body["route_image"].startswith("data:image/svg+xml;base64,")
     assert flash_client.generate_content.called
 
 
@@ -320,6 +325,7 @@ def test_navigate_route_blocked_returns_200_with_prose(
     assert response.status_code == 200
     body = response.json()
     assert "closed" in body["directions"].lower()
+    assert body["route_image"] is None
 
 
 # ---------------------------------------------------------------------------

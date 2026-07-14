@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MetLife Wayfinder</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="app" aria-labelledby="app-title">
+      <header class="titlebar">
+        <h1 id="app-title">MetLife Wayfinder</h1>
+        <span id="status" class="status" role="status" aria-live="polite">Connecting…</span>
+      </header>
+
+      <section
+        id="messages"
+        class="messages"
+        aria-live="polite"
+        aria-label="Conversation with the navigation guide"
+      ></section>
+
+      <form id="composer" class="input-row" autocomplete="off">
+        <label class="visually-hidden" for="composer-input">Your message</label>
+        <input
+          id="composer-input"
+          type="text"
+          name="message"
+          placeholder="Where are you, and where do you want to go?"
+          maxlength="500"
+          disabled
+          required
+        />
+        <button id="composer-send" class="primary" type="submit" disabled>Send</button>
+      </form>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="/static/firebase-config.js"></script>
+    <script src="/static/fan.js"></script>
+  </body>
+</html>

@@ -62,7 +62,14 @@ Not modeled: state-level actors, physical compromise of MetLife infrastructure, 
 - Dockerfile sets `--no-server-header` (carryover from CarbonSaathi) so uvicorn does not leak version info.
 - FastAPI initialized with `redirect_slashes=False` and slashless routes to prevent open-redirect abuse via trailing slash canonicalization.
 - CORS is configured to allow only the deployed origin. No `Access-Control-Allow-Origin: *`.
-- Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy) are set on every response via a middleware. **CSP is not yet set** — deliberately deferred to Phase 4B, since the correct policy depends on what the static frontend actually needs (inline `<script>`/`<style>` vs. external files), and getting it wrong on a first pass risks the exact CSP/auth debugging cost this project already avoided once by choosing Firebase Anonymous Auth over full Google Sign-In. Will be added and documented here when the frontend lands.
+- Security headers (X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy: no-referrer, Content-Security-Policy) are set on every response via `SecurityHeadersMiddleware` in `app/main.py`. The CSP directive list is:
+  - `default-src 'self'` — everything the browser doesn't need to load from elsewhere stays same-origin.
+  - `script-src 'self' https://www.gstatic.com` — the fan page loads Firebase Auth compat SDKs from `gstatic.com`; no `'unsafe-inline'` and no `'unsafe-eval'`. All app JS (`fan.js`, `staff.js`, `firebase-config.js`) is served as external files from `/static/`, never inlined.
+  - `connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com` — Firebase Auth's XHR/fetch endpoints for `signInAnonymously` and token refresh, plus same-origin calls to the FastAPI backend. No wildcard.
+  - `img-src 'self' data:` — the `data:` scheme is present specifically so the inline base64 SVG returned in `/navigate` responses can render in `<img>` tags. No third-party image hosts.
+  - `style-src 'self'` — `style.css` is the only stylesheet; no inline `<style>` or `style=` attributes.
+  - `base-uri 'self'` — prevents `<base href>` hijacking from redirecting relative URLs off-origin.
+  - `frame-ancestors 'none'` — CSP-level clickjacking defense; complements `X-Frame-Options: DENY`.
 
 ### 7. Dependency hygiene
 
@@ -75,9 +82,9 @@ Not modeled: state-level actors, physical compromise of MetLife infrastructure, 
 
 _(To be filled in during Phase 5 presentation pass. Each item below will be addressed with either a control reference above or a stated exclusion with rationale.)_
 
-- **A01: Broken Access Control** — _covered in §1, §5 above; to be expanded in Phase 5_
+- **A01: Broken Access Control** — Fan and staff auth are two entirely separate mechanisms wired at the FastAPI dependency layer, not application logic that can be forgotten on a new endpoint. Fan endpoints depend on `verify_fan_token` (`app/auth/firebase.py`), which verifies a Firebase Anonymous ID token against the project on every request; the returned UID keys every Firestore read/write on the `fans` collection, so a fan literally cannot address another fan's document — the path is `fans/{their-own-uid}` by construction. Staff endpoints depend on `verify_staff_token` (`app/auth/staff.py`), which pulls `STAFF_TOKEN` from the environment and compares in constant time (`hmac.compare_digest`) against the Bearer header. There is no per-fan-endpoint check for "is this the right fan" because there is no fan-scoped identifier in the URL to spoof — the identity comes from the verified token, not the request body. Health is the only unauthenticated endpoint and it returns a fixed body with no data access.
 - **A02: Cryptographic Failures** — _covered in §6; to be expanded_
-- **A03: Injection** — _covered in §3; to be expanded_
+- **A03: Injection** — The two injection vectors that matter here are Firestore query injection and prompt injection into Gemini. Firestore is not queried by user-supplied field names anywhere in the code — every collection/document/field name is a literal (`fans`, `venue_state`, `current`, etc.), and the only user-supplied value in a Firestore path is the verified fan UID from the ID token, which is not user-typed input. Structured endpoint inputs are validated by Pydantic v2 models with `extra="forbid"`; unknown fields raise a 422 with the flat Entry #23 error shape. String inputs bound for the graph (`target_id` in `/staff/closures`, `origin`/`destination` after Intent Agent resolution) are validated against the loaded graph before use — `_validate_edge_target` in `app/routes.py` rejects any target_id that does not correspond to a real node or real edge (including edges between real-but-non-adjacent nodes), so a crafted `target_id` cannot poison `venue_state`. Prompt injection is discussed in §3 and in the "Stated limitations" section below.
 - **A04: Insecure Design** — _to be written in Phase 5_
 - **A05: Security Misconfiguration** — _covered in §2, §6; to be expanded_
 - **A06: Vulnerable and Outdated Components** — _covered in §7; to be expanded_

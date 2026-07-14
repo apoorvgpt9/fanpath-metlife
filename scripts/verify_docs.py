@@ -300,6 +300,41 @@ def claim_20_k_service_error_detail() -> Result:
     return PASS, "errors.py gates detail on K_SERVICE and emits Entry #23 shape"
 
 
+def claim_21_static_frontend() -> Result:
+    """Entry #20: frontend is static HTML + vanilla JS. No Jinja2, no TemplateResponse."""
+    static_dir = REPO_ROOT / "static"
+    required_files = ["fan.html", "fan.js", "staff.html", "staff.js", "style.css"]
+    missing = [f for f in required_files if not (static_dir / f).exists()]
+    if missing:
+        return FAIL, f"static/ missing frontend file(s): {missing}"
+    # No Jinja2 / TemplateResponse leaked into app/
+    for py in (REPO_ROOT / "app").rglob("*.py"):
+        text = _read(py) or ""
+        if "TemplateResponse" in text or "Jinja2Templates" in text or "from jinja2" in text:
+            return FAIL, f"Entry #20 violated: templating usage in {py.relative_to(REPO_ROOT)}"
+    main_py = _read(REPO_ROOT / "app" / "main.py") or ""
+    if 'StaticFiles(directory=' not in main_py:
+        return FAIL, "app/main.py does not mount StaticFiles"
+    return PASS, "frontend is static (fan.html, staff.html, JS, CSS) with no server templating"
+
+
+def claim_22_svg_renderer_deterministic() -> Result:
+    """Entry #12: SVG rendering is deterministic — no Gemini involvement."""
+    renderer = _read(REPO_ROOT / "app" / "rendering" / "svg_renderer.py")
+    if renderer is None:
+        return FAIL, "app/rendering/svg_renderer.py missing"
+    banned = ["gemini_factory", "google.genai", "GeminiClient", "explain_route"]
+    hit = [name for name in banned if name in renderer]
+    if hit:
+        return FAIL, f"svg_renderer.py references model-side symbols: {hit}"
+    if "def render_route" not in renderer:
+        return FAIL, "svg_renderer.py does not define render_route()"
+    routes = _read(REPO_ROOT / "app" / "routes.py") or ""
+    if "render_route" not in routes:
+        return FAIL, "app/routes.py does not call render_route"
+    return PASS, "svg_renderer.py is Gemini-free; wired into /navigate via routes.py"
+
+
 CLAIMS: list[tuple[int, str, Callable[[], Result]]] = [
     (1, "coverage floor is 95%", claim_01_coverage_floor),
     (2, "ruff select includes C901, PLR0912, PLR0915", claim_02_ruff_select),
@@ -321,6 +356,8 @@ CLAIMS: list[tuple[int, str, Callable[[], Result]]] = [
     (18, "graph JSON is loaded at startup, not from Firestore", claim_18_graph_static_load),
     (19, "venue_state is read on every navigate request", claim_19_venue_state_per_request),
     (20, "error contract uses K_SERVICE for detail toggling", claim_20_k_service_error_detail),
+    (21, "frontend is static HTML + vanilla JS (Entry #20)", claim_21_static_frontend),
+    (22, "SVG rendering is deterministic (Entry #12)", claim_22_svg_renderer_deterministic),
 ]
 
 

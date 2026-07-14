@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MetLife Wayfinder — Staff</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="app" aria-labelledby="staff-title">
+      <header class="titlebar">
+        <h1 id="staff-title">Closures</h1>
+        <span id="status" class="status" role="status" aria-live="polite"></span>
+      </header>
+
+      <section
+        id="token-gate"
+        class="token-gate"
+        aria-labelledby="token-gate-title"
+        hidden
+      >
+        <h2 id="token-gate-title">Staff sign-in</h2>
+        <p>
+          Enter the shared staff token. It's kept in this browser session only —
+          never sent anywhere except the /staff/closures API.
+        </p>
+        <form id="token-form" autocomplete="off">
+          <label class="visually-hidden" for="token-input">Staff token</label>
+          <input
+            id="token-input"
+            type="password"
+            name="token"
+            placeholder="Staff token"
+            required
+          />
+          <button class="primary" type="submit">Sign in</button>
+        </form>
+        <div id="token-error" class="msg error" hidden></div>
+      </section>
+
+      <section id="staff-body" class="staff-body" hidden>
+        <section class="staff-section" aria-labelledby="closures-list-title">
+          <h2 id="closures-list-title">Active closures</h2>
+          <ul id="closures-list" class="closure-list" aria-live="polite"></ul>
+        </section>
+
+        <section class="staff-section" aria-labelledby="add-closure-title">
+          <h2 id="add-closure-title">Add a closure</h2>
+          <form id="add-form" class="form-grid" autocomplete="off">
+            <label>
+              Target type
+              <select id="add-type" name="target_type" required>
+                <option value="node">Zone (node)</option>
+                <option value="edge">Path (edge)</option>
+              </select>
+            </label>
+            <label>
+              Target id
+              <input
+                id="add-id"
+                type="text"
+                name="target_id"
+                placeholder="e.g. gate_b_plaza or gate_a_plaza__gate_b_plaza"
+                required
+              />
+            </label>
+            <button class="primary" type="submit">Close it</button>
+          </form>
+          <div id="add-error" class="msg error" hidden></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/staff.js"></script>
+  </body>
+</html>

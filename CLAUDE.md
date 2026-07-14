@@ -33,6 +33,16 @@ server-rendered schematic SVG. A thin staff layer toggles node/edge closures.
 Deadline: **July 19, 2026**. Live URL and repo are listed at the top of
 PROGRESS.md.
 
+The FastAPI app under `app/` implements the six endpoints, the two agents,
+Dijkstra pathfinding, and the deterministic SVG renderer at
+`app/rendering/svg_renderer.py` (Entry #12 — Gemini has no involvement in
+SVG generation). The `static/` directory holds the entire frontend as flat
+files — `fan.html` + `fan.js` for the fan chat, `staff.html` + `staff.js`
+for the closure panel, `style.css` for the DESIGN.md-locked dark-mode
+palette, and `firebase-config.js` for the public Firebase Auth web config.
+`app/main.py` mounts this directory at `/static/` via `StaticFiles` — no
+route handlers serve HTML (Entry #20).
+
 ## Non-negotiable architectural rules
 
 These are the decisions most likely to matter for any change — see the

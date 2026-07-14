@@ -308,4 +308,7 @@ def test_closure_visible_to_navigate_endpoint(
             json={"query": "how do I reach gate C from gate A", "history": []},
         )
     assert response.status_code == 200
-    assert response.json()["route_image"] is None
+    body = response.json()
+    # Route found around the closure — Phase 4B renders an SVG data URI here.
+    assert isinstance(body["route_image"], str)
+    assert body["route_image"].startswith("data:image/svg+xml;base64,")

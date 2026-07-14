@@ -2,11 +2,11 @@
 
 _Fan-facing GenAI navigation for MetLife Stadium during the FIFA World Cup 2026 final. Ask in your own words where you are and where you're going — get text directions and a schematic route map, in your language, with your accessibility needs honored._
 
-**Live demo:** <https://fanpath-metlife-973486326780.asia-south1.run.app> — the full JSON API is live (`/health`, `/profile`, `/navigate`, `/staff/closures`); the static fan/staff web pages ship in Phase 4B.
+**Live demo:** <https://fanpath-metlife-973486326780.asia-south1.run.app> — the full JSON API is live (`/health`, `/profile`, `/navigate`, `/staff/closures`) and the static fan/staff web pages are served under `/static/`.
 
-**Status:** Phase 4A of 6 complete (skeleton, MetLife zone graph, Firebase Auth, Firestore schema, deterministic pathfinding, Intent Agent + Guide Agent with Gemini, six-endpoint API surface with closures/rate limiting/error contract, deployed). Phase 4B (SVG renderer + static frontend) next.
+**Status:** Phase 4 of 6 complete (skeleton, MetLife zone graph, Firebase Auth, Firestore schema, deterministic pathfinding, Intent Agent + Guide Agent with Gemini, six-endpoint API surface with closures/rate limiting/error contract, deterministic SVG route renderer, static fan chat + staff closure panel, CSP header, deployed). Phase 5 (presentation pass) next.
 
-**Coverage:** 98.84% (`app/`, floor enforced at 95%)
+**Coverage:** 98.89% (`app/`, floor enforced at 95%)
 
 ---
 
@@ -85,11 +85,11 @@ Once the origin, destination, and constraints are resolved, a **deterministic Di
 │   ├── agents/           # Intent Agent, Guide Agent, Gemini client factory
 │   ├── pathfinding/      # Deterministic Dijkstra, discriminated union output
 │   ├── graph/            # Static graph loader + edge-id encoding
-│   ├── rendering/        # Server-side SVG route rendering — Phase 4B, not yet present
+│   ├── rendering/        # Server-side SVG route rendering (deterministic, Gemini-free)
 │   ├── auth/             # Firebase Anonymous (fan) + STAFF_TOKEN (staff)
 │   ├── firestore/        # fans, venue_state
 │   └── models/           # Shared enums (AccessibilityFlag, PreferredLanguage, etc.)
-├── static/               # Static frontend (fan.html, staff.html) — Phase 4B, not yet present
+├── static/               # Static frontend: fan.html, fan.js, staff.html, staff.js, style.css, firebase-config.js
 ├── data/
 │   └── metlife_graph.json  # Static zone graph (36 nodes, 54 edges)
 ├── scripts/
@@ -125,8 +125,8 @@ make verify-docs     # DECISIONS.md ↔ code sync
 make run             # uvicorn app.main:app --reload
 ```
 
-Fan interface: <http://localhost:8080/static/fan.html> _(Phase 4B — not built yet; the JSON API above is live and testable now via curl or the interactive docs at `/docs`)_
-Staff interface: <http://localhost:8080/static/staff.html> _(same — Phase 4B)_
+Fan interface: <http://localhost:8080/static/fan.html>
+Staff interface: <http://localhost:8080/static/staff.html>
 
 ## Staff access
 
