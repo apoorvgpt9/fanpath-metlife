@@ -107,7 +107,7 @@ Append an entry at each phase close: date, what shipped, validation command outp
 
 ## Deviation tracker
 
-Any place the build diverged from the 25 locked decisions or the phase plan. Each entry: what changed, why, and whether DECISIONS.md was updated with a supersession.
+Any place the build diverged from the 27 locked decisions or the phase plan. Each entry: what changed, why, and whether DECISIONS.md was updated with a supersession.
 
 - **2026-07-14 — Tool allocation:** Phases 2 and 3 were both built on Copilot, not Claude Code as the Jul-13 revised schedule table specified. Claude Code was evaluated for Phases 2-3 (discriminated-union contract-fidelity risk) but not adopted after Copilot's clean Phase 2 track record. Not a DECISIONS.md architectural entry — no supersession needed. Correction note added to the "Revised schedule" section above so the table isn't misleading.
 - **2026-07-14 — Un-spec'd file:** Copilot created `CLAUDE.md` (150 lines, Claude Code configuration) during Phase 3 without it being in the prompt spec. File is harmless and correctly summarizes DECISIONS.md governance. Kept, but noted here since it was not in the Phase 3 exit criteria.
@@ -121,3 +121,5 @@ Every deploy is logged with a timestamp and a `curl` result. This is the Efficie
 | Timestamp (UTC) | Commit SHA | `curl /health` result | Deploy source (phase) |
 | --------------- | ---------- | --------------------- | --------------------- |
 | 2026-07-13T16:30:35Z | c81776d | `{"status":"ok"}` — HTTP 200 | Phase 0 (skeleton) |
+| 2026-07-14T~03:57Z (approx — exact deploy timestamp not captured; inferred from first successful `/profile` write) | 8ff4cc2 | `{"status":"ok"}` — HTTP 200; full flow verified (`/profile` onboarding + `/navigate` returning real Gemini-backed directions) | Phase 4A (six-endpoint API surface) |
+| 2026-07-14 (exact timestamp not captured — flag for next deploy: always run `date -u` alongside the health curl) | b22dd79 | Not explicitly re-curled in the report; inferred healthy from the two confirming curls that followed (unauth `/profile` → flat 401, `/nope` → flat 404, both well-formed JSON responses) | Phase 4A hotfix (Starlette exception handler + coverage) |

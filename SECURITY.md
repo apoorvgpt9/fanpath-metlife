@@ -45,14 +45,16 @@ Not modeled: state-level actors, physical compromise of MetLife infrastructure, 
 
 ### 4. Rate limiting
 
-- All endpoints are rate-limited from the first commit (carryover from CarbonSaathi). Fan endpoints: 60/min per anonymous UID. Staff endpoints: 30/min per token. Health: unlimited.
+- All fan and staff endpoints are rate-limited (wired in Phase 4A, when those endpoints themselves were first built — the rate-limiting *library* was a dependency from commit one, carried over from CarbonSaathi, but had nothing to attach to until the endpoints existed). Fan endpoints: 60/min per anonymous UID. Staff endpoints: 30/min per token. Health: unlimited.
 - Rate limit responses use the two-category error contract (`transient`) with a friendly message.
 
 ### 5. Data exposure
 
-- **Firestore rules** deny all client-side reads and writes. Every Firestore access goes through the server, which enforces per-UID scoping on the `fans` collection and STAFF_TOKEN on `venue_state`.
+- **There is no client-side path to Firestore at all** — this app never loads the Firebase client/web SDK against Firestore on any frontend. Every read and write goes through the FastAPI server using the `google-cloud-firestore` server library, authenticated via the Cloud Run service account's Application Default Credentials. Firestore Security Rules (the client-facing access-control mechanism) are consequently not the operative control here — server client libraries bypass them entirely regardless of what they say. The real boundary is IAM: only the Cloud Run service account can reach this Firestore instance, and no client (fan browser or staff panel) ever holds credentials that could reach it directly.
+- Within the server, per-UID scoping on the `fans` collection and `STAFF_TOKEN`-gating on `venue_state` are enforced in application code (`app/firestore/fans.py`, `app/auth/staff.py`), not by a rules file.
 - Fan profiles are keyed by anonymous UID. A fan cannot read another fan's profile via any exposed endpoint.
 - Conversation history is client-managed and never persisted — no risk of one fan's chat being read by another.
+- **No `firestore.rules` file exists in this repo, and none is needed** given the above — if a future iteration ever adds a client-side Firestore SDK (e.g. a real-time listener for staff closures), Security Rules would become load-bearing again and should be added and committed at that point, not left to the console.
 
 ### 6. Transport and infrastructure
 
@@ -60,7 +62,7 @@ Not modeled: state-level actors, physical compromise of MetLife infrastructure, 
 - Dockerfile sets `--no-server-header` (carryover from CarbonSaathi) so uvicorn does not leak version info.
 - FastAPI initialized with `redirect_slashes=False` and slashless routes to prevent open-redirect abuse via trailing slash canonicalization.
 - CORS is configured to allow only the deployed origin. No `Access-Control-Allow-Origin: *`.
-- Security headers (CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy) are set on every response via a middleware.
+- Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy) are set on every response via a middleware. **CSP is not yet set** — deliberately deferred to Phase 4B, since the correct policy depends on what the static frontend actually needs (inline `<script>`/`<style>` vs. external files), and getting it wrong on a first pass risks the exact CSP/auth debugging cost this project already avoided once by choosing Firebase Anonymous Auth over full Google Sign-In. Will be added and documented here when the frontend lands.
 
 ### 7. Dependency hygiene
 

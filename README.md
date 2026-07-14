@@ -2,11 +2,11 @@
 
 _Fan-facing GenAI navigation for MetLife Stadium during the FIFA World Cup 2026 final. Ask in your own words where you are and where you're going — get text directions and a schematic route map, in your language, with your accessibility needs honored._
 
-**Live demo:** <https://fanpath-metlife-973486326780.asia-south1.run.app> — only `/health` is live so far; fan/staff interfaces ship in Phase 4.
+**Live demo:** <https://fanpath-metlife-973486326780.asia-south1.run.app> — the full JSON API is live (`/health`, `/profile`, `/navigate`, `/staff/closures`); the static fan/staff web pages ship in Phase 4B.
 
-**Status:** Phases 0-3 of 6 complete (skeleton, MetLife zone graph, Firebase Auth, Firestore schema, deterministic pathfinding, Intent Agent + Guide Agent with Gemini). Phase 4 (endpoints + frontend + full deploy) next. No fan-facing navigation feature is live yet.
+**Status:** Phase 4A of 6 complete (skeleton, MetLife zone graph, Firebase Auth, Firestore schema, deterministic pathfinding, Intent Agent + Guide Agent with Gemini, six-endpoint API surface with closures/rate limiting/error contract, deployed). Phase 4B (SVG renderer + static frontend) next.
 
-**Coverage:** 98.88% (`app/`, floor enforced at 95%)
+**Coverage:** 98.84% (`app/`, floor enforced at 95%)
 
 ---
 
@@ -67,34 +67,40 @@ Once the origin, destination, and constraints are resolved, a **deterministic Di
 
 ```
 .
-├── DECISIONS.md          # The 25 locked architectural decisions (constitutional doc)
-├── DESIGN.md             # Frontend design constitution (palette, type, spacing, tone)
+├── DECISIONS.md          # The 27 locked architectural decisions (constitutional doc)
+├── DESIGN.md             # Frontend design constitution (palette, type, spacing, tone) — Phase 4B
 ├── PROGRESS.md           # Rolling build log + verifiable claim set for `make verify-docs`
 ├── SECURITY.md           # OWASP walkthrough, threat model, known limitations
 ├── README.md             # This file
+├── CLAUDE.md             # Map to the governing docs, for any Claude Code session in this repo
 ├── Makefile              # lint, test, verify-graph, verify-docs, run, deploy
 ├── pyproject.toml        # Dependencies + ruff config + coverage floor
-├── Dockerfile            # Cloud Run image (--no-server-header, etc.)
+├── Dockerfile            # Cloud Run image (--no-server-header, copies app/ + data/)
 ├── app/                  # FastAPI application
-│   ├── main.py           # App initialization (redirect_slashes=False, CORS, headers)
-│   ├── agents/           # Intent Agent, Guide Agent
+│   ├── main.py           # App assembly: middleware, exception handlers, startup graph load
+│   ├── routes.py         # The six endpoint handlers (Entry #19)
+│   ├── schemas.py        # HTTP-boundary Pydantic request/response models
+│   ├── errors.py         # Two-category error contract (Entry #23)
+│   ├── rate_limit.py     # slowapi Limiter, fan/staff rate limits
+│   ├── agents/           # Intent Agent, Guide Agent, Gemini client factory
 │   ├── pathfinding/      # Deterministic Dijkstra, discriminated union output
-│   ├── graph/            # Static graph loader, validation
-│   ├── rendering/        # Server-side SVG route rendering
-│   ├── auth/             # Firebase Anonymous + STAFF_TOKEN
+│   ├── graph/            # Static graph loader + edge-id encoding
+│   ├── rendering/        # Server-side SVG route rendering — Phase 4B, not yet present
+│   ├── auth/             # Firebase Anonymous (fan) + STAFF_TOKEN (staff)
 │   ├── firestore/        # fans, venue_state
-│   └── errors/           # Two-category error contract
-├── static/               # Static frontend (fan.html, staff.html, style.css)
+│   └── models/           # Shared enums (AccessibilityFlag, PreferredLanguage, etc.)
+├── static/               # Static frontend (fan.html, staff.html) — Phase 4B, not yet present
 ├── data/
-│   └── metlife_graph.json  # Static zone graph (35-45 nodes)
+│   └── metlife_graph.json  # Static zone graph (36 nodes, 54 edges)
 ├── scripts/
 │   ├── verify_graph.py       # Layer-1 data-integrity check
 │   ├── verify_docs.py        # DECISIONS.md ↔ code sync check
-│   └── check_function_length.py  # AST-based max-function-length check
+│   ├── check_function_length.py  # AST-based max-function-length check
+│   └── gemini_preflight.py   # Re-runnable live check that both model tiers respond
 └── tests/
-    ├── unit/             # Layer-2 pathfinding tests (small test graphs)
+    ├── unit/             # Layer-2 pathfinding/helper tests (small test graphs)
     ├── contract/         # Layer-3 agent contract tests (Gemini mocked)
-    └── integration/      # Layer-4 full-endpoint tests
+    └── integration/      # Layer-4 full-endpoint tests (Firestore mocked, real graph)
 ```
 
 ## Running locally
@@ -119,12 +125,12 @@ make verify-docs     # DECISIONS.md ↔ code sync
 make run             # uvicorn app.main:app --reload
 ```
 
-Fan interface: <http://localhost:8080/static/fan.html>
-Staff interface: <http://localhost:8080/static/staff.html>
+Fan interface: <http://localhost:8080/static/fan.html> _(Phase 4B — not built yet; the JSON API above is live and testable now via curl or the interactive docs at `/docs`)_
+Staff interface: <http://localhost:8080/static/staff.html> _(same — Phase 4B)_
 
 ## Staff access
 
-Staff endpoints (`POST /staff/closures`, `GET /staff/closures`) require a shared bearer token. **For evaluator access to this demo, use the token: `_(added at Phase 0 deploy)_`**
+Staff endpoints (`POST /staff/closures`, `GET /staff/closures`) require a shared bearer token. **The evaluator token is shared privately (not committed to this public repo) — see submission notes for the value.**
 
 See SECURITY.md for the auth rationale and the production-hardening path.
 
