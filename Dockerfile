@@ -10,6 +10,7 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY app ./app
 COPY data ./data
+COPY static ./static
 
 RUN pip install --upgrade pip \
  && pip install .

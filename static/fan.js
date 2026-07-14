@@ -59,11 +59,34 @@
     if (routeImage) {
       const img = document.createElement("img");
       img.className = "route-img";
-      img.alt = "Schematic map of the route through MetLife Stadium.";
+      img.alt = buildAltText(text);
       img.src = routeImage;
       bubble.appendChild(img);
     }
     return bubble;
+  }
+
+  // Alt text for the route SVG. The SVG's internal <title> is invisible to
+  // screen readers when delivered via <img src="data:...">, so we derive an
+  // alt string from the actual Guide-Agent directions and cap the length so
+  // it stays a summary rather than a dumped paragraph.
+  const ALT_MAX = 140;
+  const ALT_PREFIX = "Route map: ";
+  const ALT_FALLBACK = "Schematic map of the route through MetLife Stadium.";
+
+  function buildAltText(directions) {
+    if (typeof directions !== "string") {
+      return ALT_FALLBACK;
+    }
+    const cleaned = directions.replace(/\s+/g, " ").trim();
+    if (cleaned.length === 0) {
+      return ALT_FALLBACK;
+    }
+    const bodyMax = ALT_MAX - ALT_PREFIX.length;
+    const body = cleaned.length <= bodyMax
+      ? cleaned
+      : cleaned.slice(0, bodyMax - 1).trimEnd() + "…";
+    return ALT_PREFIX + body;
   }
 
   function appendHint(text) {
