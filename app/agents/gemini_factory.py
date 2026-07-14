@@ -1,0 +1,97 @@
+"""Gemini client factory (DECISIONS.md Entry #13, Entry #26).
+
+Two-tier strategy: Flash for the Guide Agent (structured input, prose out) and
+Pro for the Intent Agent (harder NLU — landmark resolution + implicit
+constraints). Model literals are env-configurable so the Entry #26 fallback
+(both agents drop to Flash if the Pro preview is retired) is a config change,
+not a code change.
+
+Model strings default to the values Entry #26 codified after the 2026-07-13
+pre-flight:
+
+* Flash tier: ``gemini-3.5-flash`` (GA)
+* Pro   tier: ``gemini-3.1-pro-preview`` (preview — deprecation risk noted in
+  Entry #26; the ``.pro()`` factory is trivially remapped to Flash by setting
+  ``GEMINI_PRO_MODEL=gemini-3.5-flash``.)
+
+API surface uses the legacy ``generateContent`` endpoint per Entry #26, matching
+the pattern already established in ``scripts/draft_graph.py``.
+
+Agents raise :class:`GeminiServiceError` / :class:`GeminiTimeoutError` from
+this module; per DECISIONS.md Entry #23 the HTTP error mapping is Phase 4's
+job, not this module's.
+"""
+
+from __future__ import annotations
+
+import os
+
+from google import genai
+
+DEFAULT_FLASH_MODEL = "gemini-3.5-flash"
+DEFAULT_PRO_MODEL = "gemini-3.1-pro-preview"
+
+
+class GeminiError(Exception):
+    """Base class for Gemini-related failures raised by agents."""
+
+
+class GeminiTimeoutError(GeminiError):
+    """Gemini call exceeded deadline / timed out. Category: transient."""
+
+
+class GeminiServiceError(GeminiError):
+    """Gemini call failed for any other reason (5xx, auth, malformed)."""
+
+
+def _is_timeout(exc: BaseException) -> bool:
+    text = str(exc).lower()
+    return "timeout" in text or "deadline" in text
+
+
+class GeminiClient:
+    """Thin, mockable wrapper over ``genai.Client.models.generate_content``.
+
+    Deliberately narrow: one public method. Contract tests mock this class
+    (or the ``.flash()`` / ``.pro()`` factory functions) rather than the
+    agent functions that consume it — mirrors the Layer-3 boundary from
+    DECISIONS.md Entry #21.
+    """
+
+    def __init__(self, model_name: str) -> None:
+        self.model_name = model_name
+
+    def generate_content(
+        self,
+        prompt: str,
+        *,
+        response_mime_type: str | None = None,
+    ) -> str:
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise GeminiServiceError("GEMINI_API_KEY not set in environment")
+        client = genai.Client(api_key=api_key)
+        config: dict[str, str] = {}
+        if response_mime_type:
+            config["response_mime_type"] = response_mime_type
+        try:
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=config or None,
+            )
+        except Exception as exc:
+            if _is_timeout(exc):
+                raise GeminiTimeoutError(str(exc)) from exc
+            raise GeminiServiceError(str(exc)) from exc
+        return response.text or ""
+
+
+def flash() -> GeminiClient:
+    """Flash-tier client. Guide Agent (Entry #13). Model per Entry #26."""
+    return GeminiClient(os.environ.get("GEMINI_FLASH_MODEL", DEFAULT_FLASH_MODEL))
+
+
+def pro() -> GeminiClient:
+    """Pro-tier client. Intent Agent (Entry #13). Model per Entry #26."""
+    return GeminiClient(os.environ.get("GEMINI_PRO_MODEL", DEFAULT_PRO_MODEL))
