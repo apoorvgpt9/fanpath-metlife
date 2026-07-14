@@ -102,6 +102,7 @@ def post_profile(
     uid: FanUid,
     fs: FirestoreClient,
 ) -> ProfileResponse | ProfileIncompleteResponse | ProfileFailedResponse:
+    """Extract a fan profile from NL input and persist it (Entry #7)."""
     try:
         result = extract_profile(body.nl_input)
     except GeminiError as exc:
@@ -137,6 +138,7 @@ def get_profile(
     uid: FanUid,
     fs: FirestoreClient,
 ) -> ProfileResponse:
+    """Return the stored profile for this anonymous UID."""
     profile = fans_repo.read_profile(fs, uid)
     if profile is None:
         raise_error(status.HTTP_404_NOT_FOUND, "permanent", "Profile not found.")
@@ -230,6 +232,7 @@ def post_navigate(
     fs: FirestoreClient,
     graph: GraphDep,
 ) -> NavigateResponse:
+    """Core navigation endpoint: NL query in, directions + SVG out (Entry #9)."""
     profile = fans_repo.read_profile(fs, uid)
     if profile is None:
         raise_error(status.HTTP_404_NOT_FOUND, "permanent", "Profile not found.")
@@ -323,6 +326,7 @@ def post_staff_closures(
     fs: FirestoreClient,
     graph: GraphDep,
 ) -> ClosureStateResponse:
+    """Toggle a node or edge open/closed and return the new closure state."""
     canonical_edge: str | None = None
     if body.target_type == "node":
         _validate_node_target(graph, body.target_id)
@@ -345,6 +349,7 @@ def get_staff_closures(
     _auth: StaffAuth,
     fs: FirestoreClient,
 ) -> ClosureStateResponse:
+    """Return the current closure snapshot (Entry #15)."""
     state = venue_repo.read_state(fs)
     return ClosureStateResponse(
         closed_nodes=list(state.closed_nodes),

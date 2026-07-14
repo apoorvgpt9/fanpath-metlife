@@ -40,6 +40,8 @@ class _StrictModel(BaseModel):
 
 
 class ConversationTurn(_StrictModel):
+    """A single fan↔guide exchange in the rolling 3-turn conversation window."""
+
     role: Literal["fan", "guide"]
     content: str
 
@@ -50,6 +52,8 @@ class ConversationTurn(_StrictModel):
 
 
 class ResolvedRequest(_StrictModel):
+    """Intent Agent resolved origin + destination unambiguously."""
+
     type: Literal["resolved"] = "resolved"
     origin: str
     destination: str | None = None
@@ -69,12 +73,16 @@ class ResolvedRequest(_StrictModel):
 
 
 class AmbiguousRequest(_StrictModel):
+    """Multiple plausible matches — the agent asks a clarifying question."""
+
     type: Literal["ambiguous"] = "ambiguous"
     candidates: tuple[str, ...]
     clarification_question: str
 
 
 class UnresolvableRequest(_StrictModel):
+    """No landmark matches — falls back to a dropdown (Entry #5)."""
+
     type: Literal["unresolvable"] = "unresolvable"
     reason: str
 
@@ -88,6 +96,8 @@ NavigationParse = ResolvedRequest | AmbiguousRequest | UnresolvableRequest
 
 
 class ProfileComplete(_StrictModel):
+    """All required profile fields extracted successfully."""
+
     type: Literal["profile_complete"] = "profile_complete"
     seat_section: str
     accessibility_flags: tuple[AccessibilityFlag, ...] = Field(default_factory=tuple)
@@ -95,12 +105,16 @@ class ProfileComplete(_StrictModel):
 
 
 class ProfileIncomplete(_StrictModel):
+    """seat_section could not be extracted — ask a follow-up."""
+
     type: Literal["profile_incomplete"] = "profile_incomplete"
     missing: tuple[str, ...]
     followup_question: str
 
 
 class ProfileFailed(_StrictModel):
+    """Input was unusable (empty, gibberish, off-topic)."""
+
     type: Literal["profile_failed"] = "profile_failed"
     reason: str
 

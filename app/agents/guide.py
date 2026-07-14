@@ -14,9 +14,6 @@ Two branches:
 * :class:`RouteBlocked` — Entry #17 style prose explanation naming the
   blocking reason and offering to relax the accessibility filter when
   applicable. No SVG is generated for the blocked case (Entry #17).
-
-SVG rendering does not exist until Phase 4 — this module makes no rendering
-call, and the ``RouteBlocked`` branch documents that fact.
 """
 
 from __future__ import annotations

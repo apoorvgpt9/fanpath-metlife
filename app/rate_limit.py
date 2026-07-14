@@ -31,6 +31,7 @@ STAFF_LIMIT = "30/minute"
 
 
 def rate_limit_key(request: Request) -> str:
+    """Derive a rate-limit key from the Authorization header (hashed) or IP."""
     auth = request.headers.get("authorization")
     if auth:
         return "auth:" + hashlib.sha256(auth.encode("utf-8")).hexdigest()[:16]

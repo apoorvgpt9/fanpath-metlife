@@ -23,6 +23,7 @@ seam.
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any
 
 from pydantic import ValidationError
@@ -45,6 +46,8 @@ from app.agents.schemas import (
 )
 from app.firestore.fans import FanProfile
 from app.graph.loader import Graph
+
+_log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Profile extraction (Entry #7)
@@ -114,7 +117,12 @@ def extract_profile(nl_input: str) -> ProfileExtraction:
     prompt = _PROFILE_PROMPT_TEMPLATE.replace("__NL_INPUT__", nl_input.strip())
     client = pro()
     raw = client.generate_content(prompt, response_mime_type="application/json")
-    return _parse_profile_json(raw)
+    try:
+        return _parse_profile_json(raw)
+    except GeminiServiceError:
+        _log.warning("profile JSON parse failed, retrying once")
+        raw = client.generate_content(prompt, response_mime_type="application/json")
+        return _parse_profile_json(raw)
 
 
 # ---------------------------------------------------------------------------
@@ -265,7 +273,12 @@ def parse_navigation_request(
     prompt = _build_navigation_prompt(query, profile, history, graph)
     client = pro()
     raw = client.generate_content(prompt, response_mime_type="application/json")
-    return _parse_navigation_json(raw, graph)
+    try:
+        return _parse_navigation_json(raw, graph)
+    except GeminiServiceError:
+        _log.warning("navigation JSON parse failed, retrying once")
+        raw = client.generate_content(prompt, response_mime_type="application/json")
+        return _parse_navigation_json(raw, graph)
 
 
 __all__ = [

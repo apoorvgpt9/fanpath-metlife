@@ -332,3 +332,37 @@ def test_profile_validation_failure_raises(mock_pro):
     )
     with pytest.raises(GeminiServiceError, match="failed validation"):
         extract_profile("hello")
+
+
+# ---------------------------------------------------------------------------
+# Gemini JSON-parse retry (Phase 5 hardening)
+# ---------------------------------------------------------------------------
+
+
+@patch("app.agents.intent.pro")
+def test_profile_retry_on_json_parse_failure(mock_pro):
+    """First call returns bad JSON, retry succeeds."""
+    good = json.dumps(
+        {"type": "profile_complete", "seat_section": "214",
+         "accessibility_flags": [], "preferred_language": "en"}
+    )
+    client = MagicMock()
+    client.generate_content.side_effect = ["not json", good]
+    mock_pro.return_value = client
+    result = extract_profile("section 214")
+    assert isinstance(result, ProfileComplete)
+    assert client.generate_content.call_count == 2
+
+
+@patch("app.agents.intent.pro")
+def test_navigation_retry_on_json_parse_failure(mock_pro, small_graph, fan):
+    """First call returns bad JSON, retry succeeds."""
+    good = json.dumps(
+        {"type": "resolved", "origin": "a", "destination": "g", "rationale": ""}
+    )
+    client = MagicMock()
+    client.generate_content.side_effect = ["not json", good]
+    mock_pro.return_value = client
+    result = parse_navigation_request("from A to G", fan, [], small_graph)
+    assert isinstance(result, ResolvedRequest)
+    assert client.generate_content.call_count == 2

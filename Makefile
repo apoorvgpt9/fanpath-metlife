@@ -1,4 +1,4 @@
-.PHONY: lint test verify-graph verify-docs run deploy
+.PHONY: lint test verify-graph verify-docs audit run deploy
 
 REGION ?= asia-south1
 SERVICE ?= fanpath-metlife
@@ -15,6 +15,9 @@ verify-graph:
 
 verify-docs:
 	python scripts/verify_docs.py
+
+audit:
+	pip-audit
 
 run:
 	uvicorn app.main:app --reload --port 8080

@@ -34,6 +34,8 @@ class _StrictModel(BaseModel):
 
 
 class ProfileOnboardRequest(_StrictModel):
+    """Fan's natural-language onboarding message (``POST /profile``)."""
+
     nl_input: str
 
 
@@ -68,6 +70,8 @@ class ProfileFailedResponse(_StrictModel):
 
 
 class NavigateRequest(_StrictModel):
+    """Fan query plus the last 3 conversation turns (``POST /navigate``)."""
+
     query: str
     history: list[ConversationTurn] = Field(default_factory=list)
 
@@ -85,12 +89,16 @@ class NavigateResponse(_StrictModel):
 
 
 class ClosureToggleRequest(_StrictModel):
+    """Staff closure toggle — close or open a node/edge (``POST /staff/closures``)."""
+
     target_id: str
     target_type: Literal["node", "edge"]
     action: Literal["close", "open"]
 
 
 class ClosureStateResponse(_StrictModel):
+    """Current closure state snapshot (``GET/POST /staff/closures``)."""
+
     closed_nodes: list[str]
     closed_edges: list[str]
     updated_at: str
@@ -104,6 +112,8 @@ class ClosureStateResponse(_StrictModel):
 
 
 class ErrorResponse(_StrictModel):
+    """Two-category error envelope (Entry #23). For OpenAPI schema only."""
+
     type: Literal["error"] = "error"
     category: Literal["transient", "permanent"]
     message: str

@@ -1,7 +1,7 @@
 """``venue_state`` Firestore document — closed nodes and edges.
 
 Per DECISIONS.md Entry #15 (single document) and Entry #16 (read on every
-navigate request, no cache). Not wired into any endpoint yet.
+navigate request, no cache).
 """
 
 from __future__ import annotations
@@ -21,6 +21,8 @@ FIELD_UPDATED_AT = "updated_at"
 
 @dataclass(frozen=True)
 class VenueState:
+    """Immutable snapshot of the closed-nodes/edges in ``venue_state/current``."""
+
     closed_nodes: tuple[str, ...] = field(default_factory=tuple)
     closed_edges: tuple[str, ...] = field(default_factory=tuple)
     updated_at: str = ""

@@ -34,3 +34,6 @@ jobs:
 
       - name: Verify docs (DECISIONS.md <-> code)
         run: make verify-docs
+
+      - name: Audit dependencies (pip-audit)
+        run: make audit

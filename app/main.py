@@ -111,6 +111,7 @@ async def _rate_limit_exceeded_handler(
 
 
 def create_app() -> FastAPI:
+    """Assemble the FastAPI application: middleware, handlers, graph load."""
     app = FastAPI(
         title="fanpath-metlife",
         description="Smart Indoor Navigation for MetLife Stadium (FIFA World Cup 2026).",
