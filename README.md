@@ -75,7 +75,7 @@ Once the origin, destination, and constraints are resolved, a **deterministic Di
 ├── CLAUDE.md             # Map to the governing docs, for any Claude Code session in this repo
 ├── Makefile              # lint, test, verify-graph, verify-docs, run, deploy
 ├── pyproject.toml        # Dependencies + ruff config + coverage floor
-├── Dockerfile            # Cloud Run image (--no-server-header, copies app/ + data/)
+├── Dockerfile            # Cloud Run image (--no-server-header, copies app/ + data/ + static/)
 ├── app/                  # FastAPI application
 │   ├── main.py           # App assembly: middleware, exception handlers, startup graph load
 │   ├── routes.py         # The six endpoint handlers (Entry #19)
