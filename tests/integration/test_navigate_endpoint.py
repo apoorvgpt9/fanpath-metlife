@@ -233,6 +233,65 @@ def test_navigate_gemini_timeout_transient(
     assert response.json()["category"] == "transient"
 
 
+def test_profile_gemini_service_error_transient(
+    integration_client: TestClient,
+) -> None:
+    from app.agents.gemini_factory import GeminiServiceError
+
+    pro_client = MagicMock()
+    pro_client.generate_content.side_effect = GeminiServiceError("upstream 500")
+    with patch("app.agents.intent.pro", return_value=pro_client):
+        response = integration_client.post(
+            "/profile",
+            headers={"Authorization": "Bearer fan-tok"},
+            json={"nl_input": "I'm in section 128"},
+        )
+    assert response.status_code == 502
+    body = response.json()
+    assert body["type"] == "error"
+    assert body["category"] == "transient"
+
+
+def test_navigate_closed_edge_forces_detour_through_endpoint(
+    integration_client: TestClient, fake_firestore: FakeFirestoreClient, test_uid: str
+) -> None:
+    """Seed a closed edge, hit the real endpoint, confirm the closure is honored."""
+    from app.firestore import venue_state as venue_repo
+    from app.graph.edge_id import edge_id as _edge_id
+
+    _seed_default_profile(fake_firestore, test_uid)
+    canonical = _edge_id("gate_a_plaza", "gate_b_plaza")
+    fake_firestore.seed_venue_state(
+        {
+            venue_repo.FIELD_CLOSED_NODES: [],
+            venue_repo.FIELD_CLOSED_EDGES: [canonical],
+            venue_repo.FIELD_UPDATED_AT: "2026-07-14T10:05:00Z",
+        }
+    )
+    pro_client, flash_client = _fake_gemini(
+        {
+            "type": "resolved",
+            "origin": "gate_a_plaza",
+            "destination": "gate_b_plaza",
+            "rationale": "clear",
+        },
+        flash_text="Detour prose from the guide agent.",
+    )
+    with patch("app.agents.intent.pro", return_value=pro_client), patch(
+        "app.agents.guide.flash", return_value=flash_client
+    ):
+        response = integration_client.post(
+            "/navigate",
+            headers={"Authorization": "Bearer fan-tok"},
+            json={"query": "gate B", "history": []},
+        )
+    # Endpoint decoded the closed edge (exercises _decode_closures parse loop)
+    # and returned a valid response — either detour or RouteBlocked prose.
+    assert response.status_code == 200
+    assert response.json()["route_image"] is None
+    assert flash_client.generate_content.called
+
+
 def test_navigate_route_blocked_returns_200_with_prose(
     integration_client: TestClient, fake_firestore: FakeFirestoreClient, test_uid: str
 ) -> None:

@@ -117,6 +117,28 @@ def test_close_edge_persists_to_firestore(
     assert canonical in stored[venue_repo.FIELD_CLOSED_EDGES]
 
 
+def test_open_edge_removes_closure(
+    staff_client: TestClient, fake_firestore: FakeFirestoreClient
+) -> None:
+    canonical = edge_id("gate_a_plaza", "gate_b_plaza")
+    fake_firestore.seed_venue_state(
+        {
+            venue_repo.FIELD_CLOSED_NODES: [],
+            venue_repo.FIELD_CLOSED_EDGES: [canonical],
+            venue_repo.FIELD_UPDATED_AT: "2026-07-14T09:00:00Z",
+        }
+    )
+    response = staff_client.post(
+        "/staff/closures",
+        headers=_HDR,
+        json={"target_id": canonical, "target_type": "edge", "action": "open"},
+    )
+    assert response.status_code == 200
+    assert canonical not in response.json()["closed_edges"]
+    stored = fake_firestore.data[venue_repo.COLLECTION][venue_repo.DOCUMENT_ID]
+    assert canonical not in stored[venue_repo.FIELD_CLOSED_EDGES]
+
+
 def test_close_edge_visible_to_navigate(
     fake_firestore: FakeFirestoreClient, test_uid: str
 ) -> None:
@@ -187,21 +209,18 @@ def test_unknown_edge_target_rejected(staff_client: TestClient) -> None:
 
 
 def test_edge_between_real_but_nonadjacent_nodes_rejected(staff_client: TestClient) -> None:
-    # Both zones exist but there is no edge between them.
+    # gate_a_plaza and gate_c_plaza are real zones but not directly connected.
     response = staff_client.post(
         "/staff/closures",
         headers=_HDR,
         json={
-            "target_id": edge_id("gate_a_plaza", "gate_j_plaza"),
+            "target_id": edge_id("gate_a_plaza", "gate_c_plaza"),
             "target_type": "edge",
             "action": "close",
         },
     )
-    # gate_a and gate_j ARE adjacent per the graph; use two truly non-adjacent
-    # nodes instead. If the assertion below fires we picked adjacent zones.
-    if response.status_code == 200:
-        pytest.skip("chosen pair is adjacent; skipping non-adjacent-edge assertion")
     assert response.status_code == 400
+    assert response.json()["category"] == "permanent"
 
 
 def test_malformed_edge_id_rejected(staff_client: TestClient) -> None:
