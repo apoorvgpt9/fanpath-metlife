@@ -127,6 +127,9 @@
     if (body && body.type === "error" && typeof body.message === "string") {
       return body.message;
     }
+    if (body && Array.isArray(body.detail)) {
+      console.error("Validation error from server:", body);
+    }
     return fallback;
   }
 
@@ -178,8 +181,8 @@
   // ---- Send handlers -------------------------------------------------------
 
   function pushHistory(query, directions) {
-    state.history.push({ role: "user", content: query });
-    state.history.push({ role: "assistant", content: directions });
+    state.history.push({ role: "fan", content: query });
+    state.history.push({ role: "guide", content: directions });
     while (state.history.length > HISTORY_TURNS * 2) {
       state.history.shift();
     }

@@ -365,6 +365,44 @@ def test_navigate_amenity_type_destination_resolves_zone(
     assert "KIND of place" in guide_prompt
 
 
+def test_navigate_with_nonempty_history_succeeds(
+    integration_client: TestClient, fake_firestore: FakeFirestoreClient, test_uid: str
+) -> None:
+    """Non-empty history with correctly-shaped ConversationTurn objects.
+
+    Regression test: fan.js originally pushed role "user"/"assistant" but
+    the backend schema (ConversationTurn) only accepts "fan"/"guide".
+    This test ensures POST /navigate with a non-empty history returns 200."""
+    _seed_default_profile(fake_firestore, test_uid)
+    pro_client, flash_client = _fake_gemini(
+        {
+            "type": "resolved",
+            "origin": "gate_a_plaza",
+            "destination": "gate_c_plaza",
+            "rationale": "follow-up",
+        },
+        flash_text="Continue past gate B to reach gate C.",
+    )
+    with patch("app.agents.intent.pro", return_value=pro_client), patch(
+        "app.agents.guide.flash", return_value=flash_client
+    ):
+        response = integration_client.post(
+            "/navigate",
+            headers={"Authorization": "Bearer fan-tok"},
+            json={
+                "query": "how about gate C instead?",
+                "history": [
+                    {"role": "fan", "content": "where is gate B?"},
+                    {"role": "guide", "content": "Gate B is straight ahead."},
+                ],
+            },
+        )
+    assert response.status_code == 200
+    body = response.json()
+    assert "directions" in body
+    assert isinstance(body["route_image"], str)
+
+
 # ---------------------------------------------------------------------------
 # Auth regression — the double-wrap bug from Phase 3
 # ---------------------------------------------------------------------------

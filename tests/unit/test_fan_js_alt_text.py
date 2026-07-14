@@ -1,10 +1,16 @@
-"""Static + runtime checks on static/fan.js's route-image alt-text logic.
+"""Static + runtime checks on static/fan.js's route-image alt-text logic
+and conversation-history role names.
 
 The route SVG's internal <title> is invisible to screen readers when the
 SVG is delivered as ``<img src="data:...">`` — the browser does not expose
 an embedded SVG's accessibility tree through <img>. So the alt attribute
 must be derived from the Guide-Agent ``directions`` string, not the old
 hardcoded generic label. This test enforces that contract.
+
+The ``pushHistory`` role checks ensure that the roles sent to the backend
+match ``ConversationTurn.role`` (``Literal["fan", "guide"]``), not generic
+"user"/"assistant" values that would cause a 422 validation error on the
+second navigate call.
 
 The static-source checks always run. The behavioural check that actually
 executes ``buildAltText`` is skipped if ``node`` is not on ``PATH`` (kept
@@ -123,3 +129,30 @@ def test_build_alt_text_runtime_behaviour(
         assert out != fallback
     else:
         assert out == fallback
+
+
+# ---------------------------------------------------------------------------
+# pushHistory role-name checks
+# ---------------------------------------------------------------------------
+
+
+def test_push_history_uses_fan_guide_roles() -> None:
+    """pushHistory must push role:"fan" and role:"guide", not "user"/"assistant"."""
+    src = _read_fan_js()
+    assert 'role: "fan"' in src, (
+        "pushHistory must use role:'fan' to match ConversationTurn schema"
+    )
+    assert 'role: "guide"' in src, (
+        "pushHistory must use role:'guide' to match ConversationTurn schema"
+    )
+
+
+def test_push_history_does_not_use_user_assistant_roles() -> None:
+    """Regression: the old "user"/"assistant" roles cause 422 validation errors."""
+    src = _read_fan_js()
+    assert 'role: "user"' not in src, (
+        "fan.js must not push role:'user' — ConversationTurn only accepts 'fan'/'guide'"
+    )
+    assert 'role: "assistant"' not in src, (
+        "fan.js must not push role:'assistant' — ConversationTurn only accepts 'fan'/'guide'"
+    )
