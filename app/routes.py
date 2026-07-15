@@ -66,12 +66,14 @@ from app.schemas import (
 def _firestore_client(request: Request) -> firestore.Client:
     """Return a Firestore client via the app-state factory (test seam)."""
     factory = request.app.state.firestore_client_factory
-    return factory()
+    client: firestore.Client = factory()
+    return client
 
 
 def _graph(request: Request) -> Graph:
     """Return the graph loaded once at startup and cached on ``app.state``."""
-    return request.app.state.graph
+    graph: Graph = request.app.state.graph
+    return graph
 
 
 FanUid = Annotated[str, Depends(verify_fan_token)]
@@ -173,7 +175,7 @@ def _resolve_route(
     graph: Graph,
     closed_nodes: set[str],
     closed_edges: set[tuple[str, str]],
-):
+) -> RouteFound | RouteBlocked | RouteImpossible:
     """Dispatch to ``find_route`` or ``find_nearest_amenity`` per the parsed request."""
     flags = [f.value for f in profile.accessibility_flags]
     if parsed.destination_amenity_type is not None:

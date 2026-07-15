@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_GRAPH_PATH = REPO_ROOT / "data" / "metlife_graph.json"
@@ -50,7 +51,7 @@ class Graph:
     edges: tuple[Edge, ...]
 
 
-def _node_from_dict(raw: dict) -> Node:
+def _node_from_dict(raw: dict[str, Any]) -> Node:
     """Build a :class:`Node` from a decoded JSON dict."""
     return Node(
         zone_id=raw["zone_id"],
@@ -62,7 +63,7 @@ def _node_from_dict(raw: dict) -> Node:
     )
 
 
-def _edge_from_dict(raw: dict) -> Edge:
+def _edge_from_dict(raw: dict[str, Any]) -> Edge:
     """Build an :class:`Edge` from a decoded JSON dict."""
     return Edge(
         from_id=raw["from"],

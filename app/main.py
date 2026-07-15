@@ -20,7 +20,9 @@ Key wiring notes:
 from __future__ import annotations
 
 import os
+from collections.abc import Awaitable, Callable
 from pathlib import Path
+from typing import Any, Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -68,7 +70,11 @@ _SECURITY_HEADERS = {
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Attach the fixed security header set to every response."""
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self,
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
         """Delegate to ``call_next`` and set the fixed security headers."""
         response: Response = await call_next(request)
         for name, value in _SECURITY_HEADERS.items():
@@ -82,7 +88,7 @@ def _cors_origins() -> list[str]:
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
-def _default_firestore_client_factory():  # pragma: no cover
+def _default_firestore_client_factory() -> Any:  # pragma: no cover
     """Return a real Firestore client; test suites replace this factory."""
     from google.cloud import firestore
 
@@ -97,7 +103,9 @@ async def _http_exception_handler(request: Request, exc: HTTPException) -> JSONR
     if isinstance(detail, dict):
         return JSONResponse(status_code=exc.status_code, content=detail)
     message = detail if isinstance(detail, str) and detail else "Request failed."
-    category = "permanent" if 400 <= exc.status_code < 500 else "transient"
+    category: Literal["transient", "permanent"] = (
+        "permanent" if 400 <= exc.status_code < 500 else "transient"
+    )
     return JSONResponse(
         status_code=exc.status_code,
         content=error_payload(category, message),
@@ -135,9 +143,9 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(SecurityHeadersMiddleware)
 
-    app.add_exception_handler(HTTPException, _http_exception_handler)
-    app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(HTTPException, _http_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(StarletteHTTPException, _http_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     app.include_router(api_router)
 
     if _STATIC_DIR.is_dir():

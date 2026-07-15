@@ -71,7 +71,7 @@ def verify_fan_token(
     uid = decoded.get("uid")
     if not uid:
         raise _reject("decoded token missing uid")
-    return uid
+    return str(uid)
 
 
 FanUid = Annotated[str, Depends(verify_fan_token)]

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 
 from google.cloud import firestore
 
@@ -56,7 +57,7 @@ def write_state(
     closed_nodes: list[str] | tuple[str, ...],
     closed_edges: list[str] | tuple[str, ...],
     now: datetime | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Overwrite the single ``venue_state`` document."""
     if not all(isinstance(x, str) for x in closed_nodes):
         raise ValueError("closed_nodes must be a sequence of strings")

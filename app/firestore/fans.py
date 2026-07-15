@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 
 from google.cloud import firestore
 
@@ -70,7 +71,7 @@ def build_profile_document(
     accessibility_flags: list[str] | tuple[str, ...],
     preferred_language: str = DEFAULT_LANGUAGE.value,
     now: datetime | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Return the Firestore-ready dict for a new fan profile. Validates enums."""
     if not seat_section or not isinstance(seat_section, str):
         raise ValueError("seat_section must be a non-empty string")
@@ -91,7 +92,7 @@ def write_profile(
     accessibility_flags: list[str] | tuple[str, ...],
     preferred_language: str = DEFAULT_LANGUAGE.value,
     now: datetime | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Create or overwrite the fan's profile document. Returns the written dict."""
     document = build_profile_document(
         seat_section=seat_section,
