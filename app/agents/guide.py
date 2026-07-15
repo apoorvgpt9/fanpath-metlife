@@ -84,6 +84,7 @@ Return prose only.
 
 
 def _language_code(profile: FanProfile) -> str:
+    """Return the fan's preferred-language BCP-47-style code (e.g. ``"en"``)."""
     lang = profile.preferred_language
     if isinstance(lang, PreferredLanguage):
         return lang.value
@@ -91,6 +92,7 @@ def _language_code(profile: FanProfile) -> str:
 
 
 def _language_name(code: str) -> str:
+    """Map an enum code to the language name embedded in prompt text."""
     return {
         "en": "English",
         "es": "Spanish",
@@ -106,6 +108,7 @@ def _explain_found(
     profile: FanProfile,
     amenity_type: str | None,
 ) -> str:
+    """Render NL directions for a :class:`RouteFound`, appending stairs warning if needed."""
     code = _language_code(profile)
     route_lines = "\n".join(f"  {i + 1}. {n}" for i, n in enumerate(result.nodes))
     amenity_note = (
@@ -132,6 +135,7 @@ def _explain_found(
 
 
 def _explain_blocked(result: RouteBlocked, query: str, profile: FanProfile) -> str:
+    """Render an Entry #17 style prose explanation for a :class:`RouteBlocked`."""
     code = _language_code(profile)
     flags = [f.value for f in profile.accessibility_flags] or "(none)"
     prompt = _BLOCKED_PROMPT_TEMPLATE.format(

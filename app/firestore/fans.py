@@ -50,15 +50,18 @@ def _iso_z(dt: datetime) -> str:
 
 
 def _validate_flags(flags: list[str] | tuple[str, ...]) -> tuple[AccessibilityFlag, ...]:
+    """Coerce a list of strings into the ``AccessibilityFlag`` tuple, raising on unknown values."""
     validated = tuple(AccessibilityFlag(f) for f in flags)
     return validated
 
 
 def _validate_language(language: str) -> PreferredLanguage:
+    """Coerce a string into the ``PreferredLanguage`` enum, raising on unknown values."""
     return PreferredLanguage(language)
 
 
 def get_default_client() -> firestore.Client:
+    """Return a real Firestore client (test suites inject a mock instead)."""
     return firestore.Client()
 
 

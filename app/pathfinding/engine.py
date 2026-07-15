@@ -30,6 +30,8 @@ _INF = float("inf")
 
 @dataclass(frozen=True)
 class RouteFound:
+    """A successful route: ordered node list, walk time, and stairs flag."""
+
     origin: str
     destination: str
     nodes: tuple[str, ...]
@@ -39,6 +41,8 @@ class RouteFound:
 
 @dataclass(frozen=True)
 class RouteBlocked:
+    """A blocked route (closures or accessibility filter) with a human reason."""
+
     origin: str
     destination: str
     reason: str
@@ -46,6 +50,8 @@ class RouteBlocked:
 
 @dataclass(frozen=True)
 class RouteImpossible:
+    """No route exists even ignoring closures (disconnected graph or bad zone_id)."""
+
     origin: str
     destination: str
     reason: str
@@ -128,6 +134,7 @@ def _dijkstra(
 def _accessible_closed_edges(
     graph: Graph, closed_edges: set[tuple[str, str]]
 ) -> list[tuple[str, str]]:
+    """Return the closed edges that were NOT ``stairs_only`` (i.e. accessible)."""
     normalized = _normalize_closed_edges(closed_edges)
     out: list[tuple[str, str]] = []
     for e in graph.edges:
@@ -141,6 +148,7 @@ def _accessible_closed_edges(
 def _closure_reason(
     closed_nodes: set[str], closed_edges: set[tuple[str, str]]
 ) -> str:
+    """Format a human-readable closure summary for :class:`RouteBlocked` reasons."""
     bits: list[str] = []
     if closed_nodes:
         bits.append(f"closed nodes {sorted(closed_nodes)}")
@@ -244,6 +252,7 @@ def find_route(
 
 
 def _candidate_zones_for_amenity(graph: Graph, amenity_type: str) -> list[str]:
+    """Return every zone_id whose ``amenities[amenity_type]`` is truthy."""
     return [
         zone_id
         for zone_id, node in graph.nodes.items()

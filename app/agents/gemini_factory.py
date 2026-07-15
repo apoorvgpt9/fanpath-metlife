@@ -36,6 +36,7 @@ class GeminiServiceError(GeminiError):
 
 
 def _is_timeout(exc: BaseException) -> bool:
+    """Return True when ``exc`` message hints at a timeout/deadline-exceeded."""
     text = str(exc).lower()
     return "timeout" in text or "deadline" in text
 
@@ -61,6 +62,12 @@ class GeminiClient:
         *,
         response_mime_type: str | None = None,
     ) -> str:
+        """Call the Gemini ``generateContent`` API and return the response text.
+
+        Reads ``GEMINI_API_KEY`` from the environment. Raises
+        :class:`GeminiTimeoutError` when the SDK error hints at a timeout,
+        otherwise :class:`GeminiServiceError` for any other failure.
+        """
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise GeminiServiceError("GEMINI_API_KEY not set in environment")

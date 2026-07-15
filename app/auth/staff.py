@@ -23,11 +23,13 @@ _ERROR_MESSAGE = "Staff authentication required."
 
 
 def _reject(detail_message: str | None = None) -> HTTPException:
+    """Build the 401 :class:`HTTPException` with the Entry #23 staff payload."""
     payload = error_payload("permanent", _ERROR_MESSAGE, detail_message)
     return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=payload)
 
 
 def _extract_bearer(authorization: str | None) -> str:
+    """Return the raw bearer token or raise the 401 rejection payload."""
     if not authorization or not authorization.lower().startswith("bearer "):
         raise _reject("missing or malformed Authorization header")
     token = authorization.split(" ", 1)[1].strip()

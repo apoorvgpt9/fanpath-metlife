@@ -69,6 +69,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Attach the fixed security header set to every response."""
 
     async def dispatch(self, request: Request, call_next):
+        """Delegate to ``call_next`` and set the fixed security headers."""
         response: Response = await call_next(request)
         for name, value in _SECURITY_HEADERS.items():
             response.headers[name] = value
@@ -76,11 +77,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def _cors_origins() -> list[str]:
+    """Return the CORS allowlist parsed from ``ALLOWED_ORIGIN`` (default ``"*"``)."""
     raw = os.environ.get("ALLOWED_ORIGIN", "*")
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
 def _default_firestore_client_factory():  # pragma: no cover
+    """Return a real Firestore client; test suites replace this factory."""
     from google.cloud import firestore
 
     return firestore.Client()
@@ -104,6 +107,7 @@ async def _http_exception_handler(request: Request, exc: HTTPException) -> JSONR
 async def _rate_limit_exceeded_handler(
     request: Request, exc: RateLimitExceeded
 ) -> JSONResponse:
+    """Render a rate-limit rejection using the Entry #23 transient payload."""
     return JSONResponse(
         status_code=429,
         content=error_payload("transient", "Rate limit exceeded.", str(exc.detail)),

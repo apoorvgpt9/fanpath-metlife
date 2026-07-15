@@ -64,11 +64,13 @@ from app.schemas import (
 
 
 def _firestore_client(request: Request) -> firestore.Client:
+    """Return a Firestore client via the app-state factory (test seam)."""
     factory = request.app.state.firestore_client_factory
     return factory()
 
 
 def _graph(request: Request) -> Graph:
+    """Return the graph loaded once at startup and cached on ``app.state``."""
     return request.app.state.graph
 
 
@@ -157,6 +159,7 @@ def get_profile(
 
 
 def _decode_closures(state: venue_repo.VenueState) -> tuple[set[str], set[tuple[str, str]]]:
+    """Decode a :class:`VenueState` into node and canonical edge closure sets."""
     closed_nodes = set(state.closed_nodes)
     closed_edges: set[tuple[str, str]] = set()
     for eid in state.closed_edges:
@@ -171,6 +174,7 @@ def _resolve_route(
     closed_nodes: set[str],
     closed_edges: set[tuple[str, str]],
 ):
+    """Dispatch to ``find_route`` or ``find_nearest_amenity`` per the parsed request."""
     flags = [f.value for f in profile.accessibility_flags]
     if parsed.destination_amenity_type is not None:
         return find_nearest_amenity(
@@ -200,6 +204,7 @@ def _handle_navigation_parse(
     closed_nodes: set[str],
     closed_edges: set[tuple[str, str]],
 ) -> NavigateResponse:
+    """Turn a discriminated-union parse into the final ``NavigateResponse``."""
     if isinstance(parsed, AmbiguousRequest):
         return NavigateResponse(directions=parsed.clarification_question, route_image=None)
     if isinstance(parsed, UnresolvableRequest):
@@ -261,6 +266,7 @@ def post_navigate(
 
 
 def _validate_node_target(graph: Graph, target_id: str) -> None:
+    """Reject an unknown zone_id with the Entry #23 permanent-error payload."""
     if target_id not in graph.nodes:
         raise_error(
             status.HTTP_400_BAD_REQUEST,
@@ -270,6 +276,7 @@ def _validate_node_target(graph: Graph, target_id: str) -> None:
 
 
 def _validate_edge_target(graph: Graph, target_id: str) -> str:
+    """Return the canonical edge id after checking both endpoints and edge existence."""
     try:
         a, b = parse_edge_id(target_id)
     except ValueError as exc:
@@ -301,6 +308,7 @@ def _mutate_state(
     state: venue_repo.VenueState,
     canonical_edge: str | None,
 ) -> tuple[set[str], set[str]]:
+    """Apply a single close/open toggle to the current closure sets."""
     closed_nodes = set(state.closed_nodes)
     closed_edges = set(state.closed_edges)
     if body.target_type == "node":

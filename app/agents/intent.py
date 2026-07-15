@@ -87,6 +87,7 @@ Fan message: <<<__NL_INPUT__>>>
 
 
 def _parse_profile_json(raw: str) -> ProfileExtraction:
+    """Decode Gemini's JSON body and dispatch to the matching Pydantic union member."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -97,6 +98,11 @@ def _parse_profile_json(raw: str) -> ProfileExtraction:
 
 
 def _dispatch_profile(data: dict[str, Any]) -> ProfileExtraction:
+    """Validate ``data`` against the profile discriminated union.
+
+    Raises :class:`GeminiServiceError` if the ``type`` discriminator is unknown
+    or the payload fails Pydantic validation.
+    """
     kind = data.get("type")
     try:
         if kind == "profile_complete":
@@ -190,6 +196,7 @@ Unresolvable (query refers to something not in the graph, or is off-topic):
 
 
 def _format_history(history: list[ConversationTurn]) -> str:
+    """Render the last three conversation turns as a bulleted prompt block."""
     if not history:
         return "(no prior turns)"
     lines = [f"- {turn.role}: {turn.content}" for turn in history[-3:]]
@@ -197,6 +204,7 @@ def _format_history(history: list[ConversationTurn]) -> str:
 
 
 def _format_zones(graph: Graph) -> str:
+    """Render one prompt line per zone with its sections and landmark aliases."""
     lines: list[str] = []
     for zone_id, node in graph.nodes.items():
         aliases = ", ".join(node.landmark_aliases) or "(no aliases)"
@@ -211,6 +219,7 @@ def _build_navigation_prompt(
     history: list[ConversationTurn],
     graph: Graph,
 ) -> str:
+    """Fill the navigation prompt template with the fan's profile and graph."""
     flags = [f.value for f in profile.accessibility_flags] or "(none)"
     return _NAVIGATION_PROMPT_TEMPLATE.format(
         seat_section=profile.seat_section,
@@ -223,6 +232,7 @@ def _build_navigation_prompt(
 
 
 def _parse_navigation_json(raw: str, graph: Graph) -> NavigationParse:
+    """Decode Gemini's JSON body and dispatch to the navigation union member."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -233,6 +243,12 @@ def _parse_navigation_json(raw: str, graph: Graph) -> NavigationParse:
 
 
 def _dispatch_navigation(data: dict[str, Any], graph: Graph) -> NavigationParse:
+    """Validate ``data`` against the navigation union and check zone existence.
+
+    Raises :class:`GeminiServiceError` for unknown discriminators, Pydantic
+    validation failures, or zone_ids the model invented that are not in
+    ``graph``.
+    """
     kind = data.get("type")
     try:
         if kind == "resolved":
@@ -254,6 +270,7 @@ def _dispatch_navigation(data: dict[str, Any], graph: Graph) -> NavigationParse:
 
 
 def _assert_zones_exist(graph: Graph, zone_ids: list[str]) -> None:
+    """Raise :class:`GeminiServiceError` if any of ``zone_ids`` is not in ``graph``."""
     unknown = [z for z in zone_ids if z not in graph.nodes]
     if unknown:
         raise GeminiServiceError(

@@ -51,6 +51,7 @@ class Graph:
 
 
 def _node_from_dict(raw: dict) -> Node:
+    """Build a :class:`Node` from a decoded JSON dict."""
     return Node(
         zone_id=raw["zone_id"],
         sections=tuple(raw.get("sections", [])),
@@ -62,6 +63,7 @@ def _node_from_dict(raw: dict) -> Node:
 
 
 def _edge_from_dict(raw: dict) -> Edge:
+    """Build an :class:`Edge` from a decoded JSON dict."""
     return Edge(
         from_id=raw["from"],
         to_id=raw["to"],

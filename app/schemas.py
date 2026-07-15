@@ -25,6 +25,8 @@ from app.models.enums import AccessibilityFlag, PreferredLanguage
 
 
 class _StrictModel(BaseModel):
+    """Base model that rejects unknown fields (``extra="forbid"``)."""
+
     model_config = ConfigDict(extra="forbid")
 
 

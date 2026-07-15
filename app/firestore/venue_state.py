@@ -29,10 +29,12 @@ class VenueState:
 
 
 def _iso_z(dt: datetime) -> str:
+    """Format ``dt`` as a UTC ISO-8601 string with the trailing ``Z``."""
     return dt.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _doc(client: firestore.Client) -> firestore.DocumentReference:
+    """Return the single ``venue_state/current`` document reference."""
     return client.collection(COLLECTION).document(DOCUMENT_ID)
 
 

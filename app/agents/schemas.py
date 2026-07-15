@@ -31,6 +31,8 @@ from app.models.enums import (
 
 
 class _StrictModel(BaseModel):
+    """Base model rejecting extra keys and freezing instances (Entry #9)."""
+
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
@@ -62,6 +64,7 @@ class ResolvedRequest(_StrictModel):
 
     @model_validator(mode="after")
     def _exactly_one_destination(self) -> ResolvedRequest:
+        """Enforce that exactly one of zone/amenity destination is set (Entry #28)."""
         has_zone = self.destination is not None
         has_amenity = self.destination_amenity_type is not None
         if has_zone == has_amenity:

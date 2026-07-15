@@ -39,6 +39,7 @@ _LABEL_OFFSET_Y = 18
 
 
 def _canon(a: str, b: str) -> tuple[str, str]:
+    """Return the canonical (sorted) direction-agnostic edge key for ``(a, b)``."""
     return (a, b) if a < b else (b, a)
 
 
@@ -48,6 +49,7 @@ def _n(v: float) -> str:
 
 
 def _viewbox(graph: Graph) -> tuple[float, float, float, float]:
+    """Return an ``(x, y, w, h)`` SVG viewBox that fits every node with a margin."""
     xs = [n.x for n in graph.nodes.values()]
     ys = [n.y for n in graph.nodes.values()]
     min_x, min_y = min(xs), min(ys)
@@ -57,6 +59,7 @@ def _viewbox(graph: Graph) -> tuple[float, float, float, float]:
 
 
 def _stadium_outline(vb: tuple[float, float, float, float]) -> str:
+    """Render the muted rounded rectangle framing the venue schematic."""
     x, y, w, h = vb
     inner_x = x + _MARGIN / 2
     inner_y = y + _MARGIN / 2
@@ -70,6 +73,7 @@ def _stadium_outline(vb: tuple[float, float, float, float]) -> str:
 
 
 def _line(u: Node, v: Node, stroke: str, width: str, extra: str = "") -> str:
+    """Render a single ``<line>`` element between two nodes."""
     return (
         f'<line x1="{_n(u.x)}" y1="{_n(u.y)}" x2="{_n(v.x)}" y2="{_n(v.y)}" '
         f'stroke="{stroke}" stroke-width="{width}"{extra} />'
@@ -77,6 +81,7 @@ def _line(u: Node, v: Node, stroke: str, width: str, extra: str = "") -> str:
 
 
 def _closed_edges_layer(graph: Graph, closed_edges: set[tuple[str, str]]) -> str:
+    """Render every currently-closed edge as a dashed warning line (Entry #22)."""
     if not closed_edges:
         return ""
     canonical = {_canon(a, b) for a, b in closed_edges}
@@ -91,6 +96,7 @@ def _closed_edges_layer(graph: Graph, closed_edges: set[tuple[str, str]]) -> str
 
 
 def _route_layer(route: RouteFound, graph: Graph) -> str:
+    """Render the accent-colored polyline connecting the resolved route nodes."""
     parts: list[str] = []
     for a, b in zip(route.nodes, route.nodes[1:], strict=False):
         parts.append(_line(graph.nodes[a], graph.nodes[b], _COLOR_ACCENT, "3"))
@@ -98,6 +104,7 @@ def _route_layer(route: RouteFound, graph: Graph) -> str:
 
 
 def _zone_label(node: Node, text: str) -> str:
+    """Render a muted centered text label positioned just below ``node``."""
     return (
         f'<text x="{_n(node.x)}" y="{_n(node.y + _LABEL_OFFSET_Y)}" '
         f'font-size="10" fill="{_COLOR_MUTED}" text-anchor="middle">'
@@ -106,6 +113,7 @@ def _zone_label(node: Node, text: str) -> str:
 
 
 def _base_node(node: Node) -> str:
+    """Render the neutral base circle drawn under every node overlay."""
     return (
         f'<circle cx="{_n(node.x)}" cy="{_n(node.y)}" r="6" '
         f'fill="{_COLOR_SURFACE}" stroke="{_COLOR_MUTED}" stroke-width="1" />'
@@ -113,6 +121,7 @@ def _base_node(node: Node) -> str:
 
 
 def _closed_node(node: Node) -> str:
+    """Render the warning-red X overlay used for closed nodes."""
     x, y = node.x, node.y
     return (
         f'<circle cx="{_n(x)}" cy="{_n(y)}" r="6" '
@@ -127,6 +136,7 @@ def _closed_node(node: Node) -> str:
 
 
 def _origin_node(node: Node) -> str:
+    """Render the accent-filled origin marker with a "You are here" label."""
     return (
         f'<circle cx="{_n(node.x)}" cy="{_n(node.y)}" r="8" '
         f'fill="{_COLOR_ACCENT}" stroke="{_COLOR_TEXT}" stroke-width="2" />'
@@ -135,6 +145,7 @@ def _origin_node(node: Node) -> str:
 
 
 def _destination_node(node: Node) -> str:
+    """Render the text-filled destination marker with the zone_id label."""
     return (
         f'<circle cx="{_n(node.x)}" cy="{_n(node.y)}" r="8" '
         f'fill="{_COLOR_TEXT}" stroke="{_COLOR_ACCENT}" stroke-width="2" />'
@@ -143,6 +154,7 @@ def _destination_node(node: Node) -> str:
 
 
 def _intermediate_node(node: Node) -> str:
+    """Render a small accent-filled marker for a waypoint on the route."""
     return (
         f'<circle cx="{_n(node.x)}" cy="{_n(node.y)}" r="7" '
         f'fill="{_COLOR_ACCENT}" stroke="none" />'
@@ -151,6 +163,8 @@ def _intermediate_node(node: Node) -> str:
 
 @dataclass(frozen=True)
 class _NodeRoles:
+    """Node-role lookup passed to :func:`_render_node` for overlay selection."""
+
     origin: str
     destination: str
     intermediates: frozenset[str]
@@ -158,6 +172,7 @@ class _NodeRoles:
 
 
 def _render_node(node: Node, roles: _NodeRoles) -> str:
+    """Render a node with the highest-precedence role overlay it qualifies for."""
     base = _base_node(node)
     if node.zone_id in roles.closed:
         return base + _closed_node(node)
@@ -171,6 +186,7 @@ def _render_node(node: Node, roles: _NodeRoles) -> str:
 
 
 def _nodes_layer(graph: Graph, roles: _NodeRoles) -> str:
+    """Render every node in the graph with its role-appropriate overlay."""
     return "".join(_render_node(n, roles) for n in graph.nodes.values())
 
 
@@ -179,6 +195,7 @@ def _summary_title(
     closed_nodes: set[str],
     closed_edges: set[tuple[str, str]],
 ) -> str:
+    """Build the ``<title>`` / ``aria-label`` string summarizing the schematic."""
     parts = [
         f"Route from {route.origin} to {route.destination}",
         f"{route.total_walk_time_minutes:.1f} minutes",
@@ -196,6 +213,7 @@ def _build_svg(
     closed_nodes: set[str],
     closed_edges: set[tuple[str, str]],
 ) -> str:
+    """Assemble the full SVG document string for ``route`` on ``graph``."""
     intermediates = frozenset(route.nodes[1:-1]) if len(route.nodes) > 2 else frozenset()
     roles = _NodeRoles(
         origin=route.origin,
@@ -222,6 +240,7 @@ def _build_svg(
 
 
 def _to_data_uri(svg: str) -> str:
+    """Wrap raw SVG markup in a ``data:image/svg+xml;base64,...`` URI."""
     encoded = base64.b64encode(svg.encode("utf-8")).decode("ascii")
     return f"data:image/svg+xml;base64,{encoded}"
 

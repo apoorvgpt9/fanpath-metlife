@@ -38,6 +38,7 @@ def _ensure_firebase_initialized() -> None:
 
 
 def _reject(detail_message: str | None = None) -> HTTPException:
+    """Build the 401 :class:`HTTPException` with the Entry #23 auth payload."""
     payload = error_payload("permanent", _ERROR_MESSAGE, detail_message)
     return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=payload)
 
