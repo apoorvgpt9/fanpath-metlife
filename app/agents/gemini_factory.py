@@ -41,7 +41,7 @@ def _is_timeout(exc: BaseException) -> bool:
     return "timeout" in text or "deadline" in text
 
 
-MAX_OUTPUT_TOKENS = 512
+MAX_OUTPUT_TOKENS = 5120
 
 
 class GeminiClient:
