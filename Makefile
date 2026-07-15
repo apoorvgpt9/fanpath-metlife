@@ -1,4 +1,4 @@
-.PHONY: lint test verify-graph verify-docs audit run deploy
+.PHONY: lint test verify-graph verify-docs docstrings typecheck audit run deploy
 
 REGION ?= asia-south1
 SERVICE ?= fanpath-metlife
@@ -15,6 +15,12 @@ verify-graph:
 
 verify-docs:
 	python scripts/verify_docs.py
+
+docstrings:
+	python -m interrogate app -vv
+
+typecheck:
+	python -m mypy app
 
 audit:
 	pip-audit

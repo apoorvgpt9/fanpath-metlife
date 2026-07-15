@@ -42,7 +42,7 @@ def error_payload(
 
 
 def is_error_payload(value: Any) -> bool:
-    """True when ``value`` already has the flat Entry #23 shape."""
+    """Return True when ``value`` already has the flat Entry #23 shape."""
     return (
         isinstance(value, dict)
         and value.get("type") == "error"

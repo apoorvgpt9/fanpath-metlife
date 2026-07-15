@@ -27,10 +27,10 @@ _ERROR_MESSAGE = "Sign-in required. Please refresh the page to continue."
 
 def _ensure_firebase_initialized() -> None:
     """Idempotent Firebase Admin SDK initialization."""
-    if firebase_admin._apps:  # noqa: SLF001 — public API returns dict of apps
+    if firebase_admin._apps:
         return
     with _INIT_LOCK:
-        if firebase_admin._apps:  # noqa: SLF001
+        if firebase_admin._apps:
             return
         project_id = os.environ.get("FIREBASE_PROJECT_ID")
         options = {"projectId": project_id} if project_id else None

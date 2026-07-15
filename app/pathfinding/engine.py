@@ -95,7 +95,7 @@ def _dijkstra(
     origin: str,
     destination: str,
 ) -> tuple[list[str], float, bool] | None:
-    """Standard Dijkstra. Returns (path, total_time, traverses_stairs) or None."""
+    """Run Dijkstra and return (path, total_time, traverses_stairs) or None."""
     dist: dict[str, float] = {origin: 0.0}
     prev: dict[str, tuple[str, bool]] = {}
     heap: list[tuple[float, str]] = [(0.0, origin)]

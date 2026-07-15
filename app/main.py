@@ -146,7 +146,7 @@ def create_app() -> FastAPI:
 
     @app.get("/", include_in_schema=False)
     def root() -> RedirectResponse:
-        """Convenience redirect for browsers hitting the bare origin.
+        """Redirect browsers hitting the bare origin to the fan chat.
 
         Unauthenticated, unlimited — matches the treatment of ``/health``.
         Fan clients open ``/static/fan.html`` directly; this exists only so a

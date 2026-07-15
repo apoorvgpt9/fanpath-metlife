@@ -35,5 +35,11 @@ jobs:
       - name: Verify docs (DECISIONS.md <-> code)
         run: make verify-docs
 
+      - name: Docstring coverage (interrogate)
+        run: make docstrings
+
+      - name: Type check (mypy strict)
+        run: make typecheck
+
       - name: Audit dependencies (pip-audit)
         run: make audit

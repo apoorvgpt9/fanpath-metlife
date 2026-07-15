@@ -19,7 +19,7 @@ def test_ensure_firebase_initialized_short_circuits_when_already_initialized() -
         patch.object(firebase_admin, "_apps", {"[DEFAULT]": object()}),
         patch.object(firebase_admin, "initialize_app") as init,
     ):
-        fb_auth._ensure_firebase_initialized()  # noqa: SLF001 — private helper
+        fb_auth._ensure_firebase_initialized()
         init.assert_not_called()
 
 
@@ -34,7 +34,7 @@ def test_ensure_firebase_initialized_calls_initialize_when_missing(
             fb_auth.credentials, "ApplicationDefault", return_value=MagicMock()
         ),
     ):
-        fb_auth._ensure_firebase_initialized()  # noqa: SLF001
+        fb_auth._ensure_firebase_initialized()
         init.assert_called_once()
         _, options = init.call_args.args
         assert options == {"projectId": "test-project"}
@@ -51,7 +51,7 @@ def test_ensure_firebase_initialized_omits_options_when_no_project_env(
             fb_auth.credentials, "ApplicationDefault", return_value=MagicMock()
         ),
     ):
-        fb_auth._ensure_firebase_initialized()  # noqa: SLF001
+        fb_auth._ensure_firebase_initialized()
         init.assert_called_once()
         _, options = init.call_args.args
         assert options is None
