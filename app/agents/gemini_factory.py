@@ -1,18 +1,9 @@
-"""Gemini client factory (DECISIONS.md Entry #13, Entry #26).
+"""Gemini client factory (DECISIONS.md Entry #13, Entry #26, Entry #29).
 
-Two-tier strategy: Flash for the Guide Agent (structured input, prose out) and
-Pro for the Intent Agent (harder NLU — landmark resolution + implicit
-constraints). Model literals are env-configurable so the Entry #26 fallback
-(both agents drop to Flash if the Pro preview is retired) is a config change,
-not a code change.
-
-Model strings default to the values Entry #26 codified after the 2026-07-13
-pre-flight:
-
-* Flash tier: ``gemini-3.5-flash`` (GA)
-* Pro   tier: ``gemini-3.1-pro-preview`` (preview — deprecation risk noted in
-  Entry #26; the ``.pro()`` factory is trivially remapped to Flash by setting
-  ``GEMINI_PRO_MODEL=gemini-3.5-flash``.)
+Both agents now default to Flash tier (Entry #29 — Intent Agent moved from Pro
+to Flash to halve per-request latency after a measured Efficiency regression).
+Model literals are env-configurable so the tier can be changed back via
+``GEMINI_PRO_MODEL`` without a code change.
 
 API surface uses the legacy ``generateContent`` endpoint per Entry #26, matching
 the pattern already established in ``scripts/draft_graph.py``.
@@ -29,7 +20,7 @@ import os
 from google import genai
 
 DEFAULT_FLASH_MODEL = "gemini-3.5-flash"
-DEFAULT_PRO_MODEL = "gemini-3.1-pro-preview"
+DEFAULT_PRO_MODEL = "gemini-3.5-flash"
 
 
 class GeminiError(Exception):
@@ -47,6 +38,9 @@ class GeminiServiceError(GeminiError):
 def _is_timeout(exc: BaseException) -> bool:
     text = str(exc).lower()
     return "timeout" in text or "deadline" in text
+
+
+MAX_OUTPUT_TOKENS = 512
 
 
 class GeminiClient:
@@ -71,14 +65,16 @@ class GeminiClient:
         if not api_key:
             raise GeminiServiceError("GEMINI_API_KEY not set in environment")
         client = genai.Client(api_key=api_key)
-        config: dict[str, str] = {}
+        config = genai.types.GenerateContentConfig(
+            max_output_tokens=MAX_OUTPUT_TOKENS,
+        )
         if response_mime_type:
-            config["response_mime_type"] = response_mime_type
+            config.response_mime_type = response_mime_type
         try:
             response = client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
-                config=config or None,
+                config=config,
             )
         except Exception as exc:
             if _is_timeout(exc):
@@ -93,5 +89,5 @@ def flash() -> GeminiClient:
 
 
 def pro() -> GeminiClient:
-    """Pro-tier client. Intent Agent (Entry #13). Model per Entry #26."""
+    """Pro-tier client. Intent Agent (Entry #13, #29). Now defaults to Flash."""
     return GeminiClient(os.environ.get("GEMINI_PRO_MODEL", DEFAULT_PRO_MODEL))

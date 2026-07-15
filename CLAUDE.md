@@ -92,11 +92,11 @@ corresponding DECISIONS.md entry for full rationale before deviating.
 - **Enums are fixed** — don't add values without a superseding DECISIONS.md
   entry: `AccessibilityFlag` (4), `PreferredLanguage` (5), `AmenityType` (6),
   `EdgeAccessibility` (4). See `app/models/enums.py`.
-- **Gemini model strings**: Flash-tier is `gemini-3.5-flash`; Pro-tier (if
-  pre-flight confirms) is `gemini-3.1-pro-preview` — a preview model, so
-  check DECISIONS.md Entry #26 for the fallback plan if it becomes
-  unavailable. Use the `gemini_factory.flash()` / `.pro()` pattern, not
-  hardcoded model strings, for any new agent call.
+- **Gemini model strings**: Both tiers default to `gemini-3.5-flash` (Entry #29
+  moved the Intent Agent from Pro to Flash for latency). The `pro()` factory
+  function name is retained for the intent-parsing tier. Use the
+  `gemini_factory.flash()` / `.pro()` pattern, not hardcoded model strings,
+  for any new agent call.
 
 ## Code quality bar (enforced, not aspirational)
 

@@ -257,7 +257,7 @@ Every entry below was pressure-tested during the pre-build grilling session and 
 
 ## Entry #13 — Tech stack (amended by Entry #25 for multi-language)
 
-**Status:** Active — with the `preferred_language` field addition documented in Entry #25.
+**Status:** Active — with the `preferred_language` field addition documented in Entry #25. **Model-tier strategy partially superseded by Entry #29** (Intent Agent moved from Pro to Flash).
 
 **Decision:** Identical stack to CarbonSaathi. Deviations only on data shape and operational discipline.
 
@@ -635,6 +635,20 @@ Staff toggle updates the arrays. One Firestore read per navigation request to ge
 **Why not a supersession of Entry #9:** Entry #9 already stated that Intent-Agent output is "destination node **or amenity type**." The code did not honor the "or amenity type" half; this entry closes the gap. Nothing in Entry #9 is being replaced or contradicted — the existing decision is being *fulfilled*.
 
 **Why not a supersession of Entry #17 (RouteBlocked handling):** the amenity path reuses `find_route`, so `RouteBlocked` bubbles up unchanged. The only wrinkle is aggregation across multiple candidates: when every candidate is blocked, the response is a synthesized `RouteBlocked` naming the specific closure of the nearest reachable candidate. This is strictly more informative than a bare "no route" — it's the same Entry #17 spirit ("failure with explanation"), scaled to the amenity case.
+
+---
+
+## Entry #29 — Intent Agent moved from Pro to Flash tier (partially supersedes Entry #13 model-tier strategy)
+
+**Status:** Active. **Partially supersedes Entry #13** — specifically the model-tier assignment that placed the Intent Agent on Pro. The Guide Agent stays on Flash as Entry #13 originally decided. Entry #26's model-string update is unaffected (Flash is still `gemini-3.5-flash`).
+
+**Trigger:** Efficiency score regressed from 100 (Challenge 3, CarbonSaathi) to 80 (Challenge 4, first submission). Root cause: `gemini-3.1-pro-preview` measured at 9.4s/call during the Phase 3 pre-flight, vs. 2.2s/call for Flash. With two sequential Gemini calls per `/navigate` request (Intent on Pro, Guide on Flash), per-request latency was dominated by the Pro call.
+
+**Decision:** Intent Agent now defaults to `gemini-3.5-flash` (same model as the Guide Agent). The `pro()` factory function retains its name — it represents the "intent-parsing tier," decoupled from which literal model backs it. The `GEMINI_PRO_MODEL` env-var override remains for future flexibility.
+
+**Tradeoff acknowledged:** Flash may be marginally weaker than Pro at ambiguous NLU (landmark resolution, implicit constraint detection). Mitigation: the full contract test suite — including every hard case from Entry #4's grilling session — must continue to pass. If any intent-parsing tests regress, that is the signal to reconsider; the existing test suite is the quality gate, not an untested assumption about Pro's superiority.
+
+**Latency impact:** approximately halves the slower of the two Gemini calls on each navigate request — from ~9.4s to ~2.2s based on pre-flight measurements. Actual post-deploy latency to be measured and recorded in PROGRESS.md.
 
 ---
 

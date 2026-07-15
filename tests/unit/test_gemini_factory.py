@@ -64,7 +64,8 @@ def test_generate_content_success(mock_client_cls, monkeypatch):
     mock_client.models.generate_content.assert_called_once()
     call = mock_client.models.generate_content.call_args
     assert call.kwargs["model"] == "test-model"
-    assert call.kwargs["config"] is None
+    cfg = call.kwargs["config"]
+    assert cfg.max_output_tokens == 512
 
 
 @patch("app.agents.gemini_factory.genai.Client")
@@ -79,7 +80,9 @@ def test_generate_content_with_mime(mock_client_cls, monkeypatch):
     client = GeminiClient("test-model")
     client.generate_content("hi", response_mime_type="application/json")
     call = mock_client.models.generate_content.call_args
-    assert call.kwargs["config"] == {"response_mime_type": "application/json"}
+    cfg = call.kwargs["config"]
+    assert cfg.response_mime_type == "application/json"
+    assert cfg.max_output_tokens == 512
 
 
 @patch("app.agents.gemini_factory.genai.Client")
