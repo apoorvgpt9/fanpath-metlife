@@ -47,9 +47,9 @@ def _read(path: Path) -> str | None:
 def claim_01_coverage_floor() -> Result:
     py = _read(REPO_ROOT / "pyproject.toml") or ""
     mk = _read(REPO_ROOT / "Makefile") or ""
-    if "--cov-fail-under=95" in py or "--cov-fail-under=95" in mk:
-        return PASS, "coverage floor --cov-fail-under=95 present"
-    return FAIL, "expected --cov-fail-under=95 in pyproject.toml or Makefile"
+    if "--cov-fail-under=100" in py or "--cov-fail-under=100" in mk:
+        return PASS, "coverage floor --cov-fail-under=100 present"
+    return FAIL, "expected --cov-fail-under=100 in pyproject.toml or Makefile"
 
 
 def claim_02_ruff_select() -> Result:
@@ -353,7 +353,7 @@ def claim_23_amenity_resolution() -> Result:
 
 
 CLAIMS: list[tuple[int, str, Callable[[], Result]]] = [
-    (1, "coverage floor is 95%", claim_01_coverage_floor),
+    (1, "coverage floor is 100%", claim_01_coverage_floor),
     (2, "ruff select includes C901, PLR0912, PLR0915", claim_02_ruff_select),
     (3, "ruff max-complexity = 10", claim_03_max_complexity),
     (4, "function-length threshold is 80", claim_04_function_length),

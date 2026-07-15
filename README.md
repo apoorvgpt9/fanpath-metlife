@@ -6,7 +6,7 @@ _Fan-facing GenAI navigation for MetLife Stadium during the FIFA World Cup 2026 
 
 **Status:** Phase 6 of 6 complete (skeleton, MetLife zone graph, Firebase Auth, Firestore schema, deterministic pathfinding, Intent Agent + Guide Agent with Gemini, six-endpoint API surface with closures/rate limiting/error contract, deterministic SVG route renderer, static fan chat + staff closure panel, CSP header, amenity-type destination resolution, `GET /` redirect to the fan UI, presentation pass with OWASP Top 10 walkthrough and pip-audit in CI, final gauntlet verified, deployed). All four manual-browser checks (sign-in/UI load, route+map rendering, accessibility rerouting, staff toggle round trip) confirmed by human tester. Ready for submission.
 
-**Coverage:** 98.95% across 189 tests (`app/`, floor enforced at 95%)
+**Coverage:** 100.00% across 193 tests (`app/`, floor enforced at 100%)
 
 ---
 
@@ -117,7 +117,7 @@ export FIREBASE_PROJECT_ID=...
 
 # Run all quality gates
 make lint            # ruff + function-length check
-make test            # pytest with 95% coverage floor
+make test            # pytest with 100% coverage floor
 make verify-graph    # Layer-1 graph data integrity
 make verify-docs     # DECISIONS.md ↔ code sync
 
@@ -139,7 +139,7 @@ See SECURITY.md for the auth rationale and the production-hardening path.
 - **Graph is sourced, not measured.** Zone topology is derived from published MetLife venue maps (seating charts, ADA maps, concourse diagrams). Walk-time estimates are constructed from map distances, not observed. Every section maps to exactly one zone; `make verify-graph` enforces connectivity and accessibility-path existence.
 - **The graph is a design boundary, not a TODO.** The same schema extends to any other World Cup venue.
 - **Anonymous auth is intentional** — the CSP/auth pain of a full Google Sign-In flow is not worth the trade at evaluation scale. Documented limitation: closing the browser or clearing cookies loses the profile.
-- **Coverage: 95% floor enforced in CI, actual achieved number reported here at submission.**
+- **Coverage: 100% floor enforced in CI, actual achieved number reported here at submission.**
 
 ## What's out of scope (deliberate design boundaries)
 

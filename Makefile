@@ -8,7 +8,7 @@ lint:
 	python scripts/check_function_length.py
 
 test:
-	pytest --cov=app --cov-report=term-missing --cov-fail-under=95
+	pytest --cov=app --cov-report=term-missing --cov-fail-under=100
 
 verify-graph:
 	python scripts/verify_graph.py

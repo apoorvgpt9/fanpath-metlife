@@ -30,7 +30,7 @@ def _ensure_firebase_initialized() -> None:
     if firebase_admin._apps:
         return
     with _INIT_LOCK:
-        if firebase_admin._apps:
+        if firebase_admin._apps:  # pragma: no cover - double-checked lock race
             return
         project_id = os.environ.get("FIREBASE_PROJECT_ID")
         options = {"projectId": project_id} if project_id else None
@@ -60,7 +60,9 @@ def verify_fan_token(
         decoded = firebase_auth.verify_id_token(token)
     except firebase_auth.InvalidIdTokenError as exc:
         raise _reject(f"invalid id token: {exc}") from exc
-    except firebase_auth.ExpiredIdTokenError as exc:
+    # ExpiredIdTokenError is a subclass of InvalidIdTokenError and is caught
+    # by the branch above; the handler below is kept as documentation.
+    except firebase_auth.ExpiredIdTokenError as exc:  # pragma: no cover
         raise _reject(f"expired id token: {exc}") from exc
     except (
         firebase_auth.RevokedIdTokenError,

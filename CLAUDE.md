@@ -100,9 +100,10 @@ corresponding DECISIONS.md entry for full rationale before deviating.
 
 ## Code quality bar (enforced, not aspirational)
 
-- **Coverage floor 95%**, target 98%+ (`--cov-fail-under=95` in
-  `pyproject.toml`/Makefile). Don't drop below the floor; don't celebrate
-  hitting exactly the floor.
+- **Coverage floor 100%** (`--cov-fail-under=100` in
+  `pyproject.toml`/Makefile). Any drop below 100% fails CI — use
+  targeted tests, not `# pragma: no cover`, unless a branch is
+  genuinely unreachable.
 - **ruff** with `C901`, `PLR0912`, `PLR0915` selected, `max-complexity = 10`.
   Keep functions simple and short — decompose rather than suppress.
 - **Function-length cap: 80 lines**, enforced by
@@ -145,7 +146,7 @@ needs adding — don't let this table go stale silently.
 
 ```
 make lint          # ruff + function-length check
-make test           # pytest, 95% coverage floor
+make test           # pytest, 100% coverage floor
 make verify-graph   # graph data integrity script
 make verify-docs    # DECISIONS.md claim table vs. code
 make run            # uvicorn --reload, port 8080

@@ -88,7 +88,7 @@ def _language_code(profile: FanProfile) -> str:
     lang = profile.preferred_language
     if isinstance(lang, PreferredLanguage):
         return lang.value
-    return str(lang)
+    return str(lang)  # pragma: no cover - dataclass field is always the enum
 
 
 def _language_name(code: str) -> str:

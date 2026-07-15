@@ -58,7 +58,7 @@ Each row is: claim from DECISIONS.md → the grep or file check that verifies it
 
 | # | Claim                                                                               | Verification                                                                                              |
 | - | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1 | Coverage floor is 95% (Entry #13, #21)                                              | `pyproject.toml` contains `--cov-fail-under=95` OR Makefile `test` target has `--cov-fail-under=95`       |
+| 1 | Coverage floor is 100% (Entry #13, #21)                                             | `pyproject.toml` contains `--cov-fail-under=100` OR Makefile `test` target has `--cov-fail-under=100`     |
 | 2 | ruff has C901, PLR0912, PLR0915 in `select` (Entry #13)                             | `pyproject.toml` `[tool.ruff]` `select` list contains `"C901"`, `"PLR0912"`, `"PLR0915"`                  |
 | 3 | ruff `max-complexity = 10` (Entry #13)                                              | `pyproject.toml` `[tool.ruff.lint.mccabe]` `max-complexity = 10`                                          |
 | 4 | Function-length threshold is 80 lines (Phase 0 detail)                              | `scripts/check_function_length.py` contains `MAX_FUNCTION_LINES = 80` (or equivalent constant)            |
