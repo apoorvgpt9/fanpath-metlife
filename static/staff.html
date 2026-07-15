@@ -3,11 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0F172A" />
     <title>MetLife Wayfinder — Staff</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <main class="app" aria-labelledby="staff-title">
+    <a class="skip-link" href="#token-input">Skip to staff sign-in</a>
+    <noscript>
+      <p class="noscript-warning" role="alert">
+        The staff closure panel needs JavaScript to authenticate and post
+        closures. Please enable JavaScript in your browser settings and
+        reload this page.
+      </p>
+    </noscript>
+    <main class="app" id="main" aria-labelledby="staff-title">
       <header class="titlebar">
         <h1 id="staff-title">Closures</h1>
         <span id="status" class="status" role="status" aria-live="polite"></span>
@@ -20,53 +30,67 @@
         hidden
       >
         <h2 id="token-gate-title">Staff sign-in</h2>
-        <p>
+        <p id="token-gate-help">
           Enter the shared staff token. It's kept in this browser session only —
           never sent anywhere except the /staff/closures API.
         </p>
-        <form id="token-form" autocomplete="off">
+        <form id="token-form" autocomplete="off" aria-describedby="token-gate-help">
           <label class="visually-hidden" for="token-input">Staff token</label>
           <input
             id="token-input"
             type="password"
             name="token"
             placeholder="Staff token"
+            aria-describedby="token-gate-help"
             required
           />
           <button class="primary" type="submit">Sign in</button>
         </form>
-        <div id="token-error" class="msg error" hidden></div>
+        <div id="token-error" class="msg error" role="alert" aria-live="assertive" hidden></div>
       </section>
 
       <section id="staff-body" class="staff-body" hidden>
         <section class="staff-section" aria-labelledby="closures-list-title">
           <h2 id="closures-list-title">Active closures</h2>
-          <ul id="closures-list" class="closure-list" aria-live="polite"></ul>
+          <ul
+            id="closures-list"
+            class="closure-list"
+            aria-live="polite"
+            aria-labelledby="closures-list-title"
+          ></ul>
         </section>
 
         <section class="staff-section" aria-labelledby="add-closure-title">
           <h2 id="add-closure-title">Add a closure</h2>
           <form id="add-form" class="form-grid" autocomplete="off">
-            <label>
-              Target type
-              <select id="add-type" name="target_type" required>
-                <option value="node">Zone (node)</option>
-                <option value="edge">Path (edge)</option>
-              </select>
-            </label>
-            <label>
-              Target id
-              <input
-                id="add-id"
-                type="text"
-                name="target_id"
-                placeholder="e.g. gate_b_plaza or gate_a_plaza__gate_b_plaza"
-                required
-              />
-            </label>
+            <fieldset class="form-fieldset">
+              <legend class="visually-hidden">Closure target</legend>
+              <label>
+                Target type
+                <select id="add-type" name="target_type" required>
+                  <option value="node">Zone (node)</option>
+                  <option value="edge">Path (edge)</option>
+                </select>
+              </label>
+              <label>
+                Target id
+                <input
+                  id="add-id"
+                  type="text"
+                  name="target_id"
+                  placeholder="e.g. gate_b_plaza or gate_a_plaza__gate_b_plaza"
+                  aria-describedby="add-id-hint"
+                  required
+                />
+                <span id="add-id-hint" class="hint">
+                  Zone id (e.g. <code>gate_b_plaza</code>) or edge id
+                  (<code>from__to</code>, in either order).
+                </span>
+              </label>
+            </fieldset>
             <button class="primary" type="submit">Close it</button>
           </form>
-          <div id="add-error" class="msg error" hidden></div>
+          <div id="add-error" class="msg error" role="alert" aria-live="assertive" hidden></div>
         </section>
       </section>
     </main>

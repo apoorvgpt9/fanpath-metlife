@@ -3,11 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0F172A" />
     <title>MetLife Wayfinder</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <main class="app" aria-labelledby="app-title">
+    <a class="skip-link" href="#composer-input">Skip to message input</a>
+    <noscript>
+      <p class="noscript-warning" role="alert">
+        MetLife Wayfinder needs JavaScript to sign in and send messages.
+        Please enable JavaScript in your browser settings and reload this page.
+      </p>
+    </noscript>
+    <main class="app" id="main" aria-labelledby="app-title">
       <header class="titlebar">
         <h1 id="app-title">MetLife Wayfinder</h1>
         <span id="status" class="status" role="status" aria-live="polite">Connecting…</span>
@@ -16,11 +25,19 @@
       <section
         id="messages"
         class="messages"
+        role="log"
         aria-live="polite"
-        aria-label="Conversation with the navigation guide"
+        aria-atomic="false"
+        aria-relevant="additions"
+        aria-labelledby="app-title"
       ></section>
 
-      <form id="composer" class="input-row" autocomplete="off">
+      <form
+        id="composer"
+        class="input-row"
+        autocomplete="off"
+        aria-label="Send a message to the navigation guide"
+      >
         <label class="visually-hidden" for="composer-input">Your message</label>
         <input
           id="composer-input"
@@ -28,9 +45,14 @@
           name="message"
           placeholder="Where are you, and where do you want to go?"
           maxlength="500"
+          aria-describedby="composer-hint"
           disabled
           required
         />
+        <span id="composer-hint" class="visually-hidden">
+          Describe your current location and destination. Answers appear above
+          this input, in the conversation log.
+        </span>
         <button id="composer-send" class="primary" type="submit" disabled>Send</button>
       </form>
     </main>

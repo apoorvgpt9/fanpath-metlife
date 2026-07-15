@@ -3,6 +3,7 @@
  * values without a numbered amendment there. Dark mode is the design.
  */
 :root {
+  color-scheme: dark;
   --color-bg: #0F172A;
   --color-surface: #1E293B;
   --color-text: #F1F5F9;
@@ -254,4 +255,60 @@ input, textarea {
   margin: 0;
   color: var(--color-muted);
   font-size: 13px;
+}
+
+/* --------- Accessibility utilities --------- */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: var(--space-sm);
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.noscript-warning {
+  margin: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-warn);
+  color: var(--color-warn);
+  border-radius: 8px;
+}
+
+.form-fieldset {
+  border: 1px solid var(--color-surface);
+  border-radius: 6px;
+  padding: var(--space-md);
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+}
+
+.hint {
+  color: var(--color-muted);
+  font-size: 12px;
+  margin-top: var(--space-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
