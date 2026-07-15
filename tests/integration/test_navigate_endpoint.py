@@ -13,7 +13,7 @@ The regression test for Phase 3's double-wrap bug is
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -39,11 +39,11 @@ def _seed_default_profile(fake: FakeFirestoreClient, uid: str) -> None:
 def _fake_gemini(pro_payload: dict | str, flash_text: str = "Turn left, then right.") -> tuple:
     pro_client = MagicMock()
     if isinstance(pro_payload, dict):
-        pro_client.generate_content.return_value = json.dumps(pro_payload)
+        pro_client.generate_content = AsyncMock(return_value=json.dumps(pro_payload))
     else:
-        pro_client.generate_content.return_value = pro_payload
+        pro_client.generate_content = AsyncMock(return_value=pro_payload)
     flash_client = MagicMock()
-    flash_client.generate_content.return_value = flash_text
+    flash_client.generate_content = AsyncMock(return_value=flash_text)
     return pro_client, flash_client
 
 
@@ -225,7 +225,7 @@ def test_navigate_gemini_timeout_transient(
 ) -> None:
     _seed_default_profile(fake_firestore, test_uid)
     pro_client = MagicMock()
-    pro_client.generate_content.side_effect = GeminiTimeoutError("deadline exceeded")
+    pro_client.generate_content = AsyncMock(side_effect=GeminiTimeoutError("deadline exceeded"))
     with patch("app.agents.intent.pro", return_value=pro_client):
         response = integration_client.post(
             "/navigate",
@@ -242,7 +242,7 @@ def test_profile_gemini_service_error_transient(
     from app.agents.gemini_factory import GeminiServiceError
 
     pro_client = MagicMock()
-    pro_client.generate_content.side_effect = GeminiServiceError("upstream 500")
+    pro_client.generate_content = AsyncMock(side_effect=GeminiServiceError("upstream 500"))
     with patch("app.agents.intent.pro", return_value=pro_client):
         response = integration_client.post(
             "/profile",

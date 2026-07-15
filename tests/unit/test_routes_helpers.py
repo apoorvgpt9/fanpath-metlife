@@ -49,9 +49,13 @@ def test_handle_navigation_parse_route_impossible_raises_permanent_400(monkeypat
 
     monkeypatch.setattr("app.routes.find_route", _fake_find_route)
 
+    import asyncio
+
     with pytest.raises(HTTPException) as exc_info:
-        _handle_navigation_parse(
-            parsed, body, profile, graph=object(), closed_nodes=set(), closed_edges=set()
+        asyncio.run(
+            _handle_navigation_parse(
+                parsed, body, profile, graph=object(), closed_nodes=set(), closed_edges=set()
+            )
         )
 
     assert exc_info.value.status_code == 400

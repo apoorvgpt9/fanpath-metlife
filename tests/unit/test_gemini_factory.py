@@ -7,7 +7,7 @@ here — plus the error-classification logic on the ``generate_content`` path.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -43,88 +43,94 @@ def test_pro_env_override(monkeypatch):
     assert pro().model_name == DEFAULT_FLASH_MODEL
 
 
-def test_generate_content_requires_api_key(monkeypatch):
+async def test_generate_content_requires_api_key(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     client = GeminiClient("any-model")
     with pytest.raises(GeminiServiceError, match="GEMINI_API_KEY"):
-        client.generate_content("hello")
+        await client.generate_content("hello")
 
 
 @patch("app.agents.gemini_factory.genai.Client")
-def test_generate_content_success(mock_client_cls, monkeypatch):
+async def test_generate_content_success(mock_client_cls, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     mock_response = MagicMock()
     mock_response.text = "OK"
     mock_client = MagicMock()
-    mock_client.models.generate_content.return_value = mock_response
+    mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
     mock_client_cls.return_value = mock_client
 
     client = GeminiClient("test-model")
-    assert client.generate_content("hi") == "OK"
-    mock_client.models.generate_content.assert_called_once()
-    call = mock_client.models.generate_content.call_args
+    assert await client.generate_content("hi") == "OK"
+    mock_client.aio.models.generate_content.assert_called_once()
+    call = mock_client.aio.models.generate_content.call_args
     assert call.kwargs["model"] == "test-model"
     cfg = call.kwargs["config"]
     assert cfg.max_output_tokens == 5120
 
 
 @patch("app.agents.gemini_factory.genai.Client")
-def test_generate_content_with_mime(mock_client_cls, monkeypatch):
+async def test_generate_content_with_mime(mock_client_cls, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     mock_response = MagicMock()
     mock_response.text = '{"ok":true}'
     mock_client = MagicMock()
-    mock_client.models.generate_content.return_value = mock_response
+    mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
     mock_client_cls.return_value = mock_client
 
     client = GeminiClient("test-model")
-    client.generate_content("hi", response_mime_type="application/json")
-    call = mock_client.models.generate_content.call_args
+    await client.generate_content("hi", response_mime_type="application/json")
+    call = mock_client.aio.models.generate_content.call_args
     cfg = call.kwargs["config"]
     assert cfg.response_mime_type == "application/json"
     assert cfg.max_output_tokens == 5120
 
 
 @patch("app.agents.gemini_factory.genai.Client")
-def test_generate_content_empty_text(mock_client_cls, monkeypatch):
+async def test_generate_content_empty_text(mock_client_cls, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     mock_response = MagicMock()
     mock_response.text = None
     mock_client = MagicMock()
-    mock_client.models.generate_content.return_value = mock_response
+    mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
     mock_client_cls.return_value = mock_client
 
-    assert GeminiClient("m").generate_content("hi") == ""
+    assert await GeminiClient("m").generate_content("hi") == ""
 
 
 @patch("app.agents.gemini_factory.genai.Client")
-def test_generate_content_timeout(mock_client_cls, monkeypatch):
+async def test_generate_content_timeout(mock_client_cls, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     mock_client = MagicMock()
-    mock_client.models.generate_content.side_effect = RuntimeError("deadline exceeded")
-    mock_client_cls.return_value = mock_client
-
-    with pytest.raises(GeminiTimeoutError):
-        GeminiClient("m").generate_content("hi")
-
-
-@patch("app.agents.gemini_factory.genai.Client")
-def test_generate_content_timeout_variant(mock_client_cls, monkeypatch):
-    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
-    mock_client = MagicMock()
-    mock_client.models.generate_content.side_effect = RuntimeError("Request timeout after 30s")
+    mock_client.aio.models.generate_content = AsyncMock(
+        side_effect=RuntimeError("deadline exceeded")
+    )
     mock_client_cls.return_value = mock_client
 
     with pytest.raises(GeminiTimeoutError):
-        GeminiClient("m").generate_content("hi")
+        await GeminiClient("m").generate_content("hi")
 
 
 @patch("app.agents.gemini_factory.genai.Client")
-def test_generate_content_other_error(mock_client_cls, monkeypatch):
+async def test_generate_content_timeout_variant(mock_client_cls, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     mock_client = MagicMock()
-    mock_client.models.generate_content.side_effect = RuntimeError("500 internal error")
+    mock_client.aio.models.generate_content = AsyncMock(
+        side_effect=RuntimeError("Request timeout after 30s")
+    )
+    mock_client_cls.return_value = mock_client
+
+    with pytest.raises(GeminiTimeoutError):
+        await GeminiClient("m").generate_content("hi")
+
+
+@patch("app.agents.gemini_factory.genai.Client")
+async def test_generate_content_other_error(mock_client_cls, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    mock_client = MagicMock()
+    mock_client.aio.models.generate_content = AsyncMock(
+        side_effect=RuntimeError("500 internal error")
+    )
     mock_client_cls.return_value = mock_client
 
     with pytest.raises(GeminiServiceError):
-        GeminiClient("m").generate_content("hi")
+        await GeminiClient("m").generate_content("hi")

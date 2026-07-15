@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -99,6 +100,13 @@ def load_graph(path: str | Path) -> Graph:
     return Graph(nodes=nodes, edges=edges)
 
 
+@lru_cache(maxsize=1)
 def load_default_graph() -> Graph:
-    """Load the production MetLife graph from ``DEFAULT_GRAPH_PATH``."""
+    """Load the production MetLife graph from ``DEFAULT_GRAPH_PATH``.
+
+    Cached (Entry #8 carryover) since the graph takes zero arguments and is
+    immutable once loaded — repeated calls (e.g. across tests that each build
+    their own ``create_app()``) return the same frozen :class:`Graph` object
+    instead of re-reading and re-parsing the JSON file from disk each time.
+    """
     return load_graph(DEFAULT_GRAPH_PATH)

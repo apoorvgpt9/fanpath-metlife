@@ -100,7 +100,7 @@ def _map_gemini_error(exc: GeminiError) -> None:
 
 @router.post("/profile")
 @limiter.limit(FAN_LIMIT)
-def post_profile(
+async def post_profile(
     request: Request,
     body: ProfileOnboardRequest,
     uid: FanUid,
@@ -108,7 +108,7 @@ def post_profile(
 ) -> ProfileResponse | ProfileIncompleteResponse | ProfileFailedResponse:
     """Extract a fan profile from NL input and persist it (Entry #7)."""
     try:
-        result = extract_profile(body.nl_input)
+        result = await extract_profile(body.nl_input)
     except GeminiError as exc:
         _map_gemini_error(exc)
     if isinstance(result, ProfileIncomplete):
@@ -198,7 +198,7 @@ def _resolve_route(
     )
 
 
-def _handle_navigation_parse(
+async def _handle_navigation_parse(
     parsed: ResolvedRequest | AmbiguousRequest | UnresolvableRequest,
     body: NavigateRequest,
     profile: fans_repo.FanProfile,
@@ -216,7 +216,7 @@ def _handle_navigation_parse(
         raise_error(status.HTTP_400_BAD_REQUEST, "permanent", route.reason)
     assert isinstance(route, RouteFound | RouteBlocked)
     amenity = parsed.destination_amenity_type
-    directions = explain_route(
+    directions = await explain_route(
         route,
         body.query,
         profile,
@@ -232,7 +232,7 @@ def _handle_navigation_parse(
 
 @router.post("/navigate")
 @limiter.limit(FAN_LIMIT)
-def post_navigate(
+async def post_navigate(
     request: Request,
     body: NavigateRequest,
     uid: FanUid,
@@ -254,10 +254,10 @@ def post_navigate(
             str(exc),
         )
     try:
-        parsed = parse_navigation_request(body.query, profile, list(body.history), graph)
+        parsed = await parse_navigation_request(body.query, profile, list(body.history), graph)
     except GeminiError as exc:
         _map_gemini_error(exc)
-    return _handle_navigation_parse(
+    return await _handle_navigation_parse(
         parsed, body, profile, graph, closed_nodes, closed_edges
     )
 

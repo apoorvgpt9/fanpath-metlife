@@ -10,6 +10,19 @@ _Fan-facing GenAI navigation for MetLife Stadium during the FIFA World Cup 2026 
 
 ---
 
+## Evaluation criteria map
+
+| Criterion | How it's addressed | Where to verify |
+| --- | --- | --- |
+| **Code Quality** | ruff (`C901`/`PLR0912`/`PLR0915` selected, `max-complexity = 10`, plus `N`/`UP`/`C4`/`SIM`/`RUF`/`BLE001`/pydocstyle rules) + an AST-based 80-line function cap + `mypy` strict + `interrogate` docstring coverage, all wired as separate CI gates. 100% test coverage floor (not just measured — enforced, `--cov-fail-under=100`). | [pyproject.toml](pyproject.toml) (`[tool.ruff]`, `[project.optional-dependencies]`), [Makefile](Makefile) (`lint`, `typecheck`, `docstrings`, `test` targets), [scripts/check_function_length.py](scripts/check_function_length.py) |
+| **Problem Statement Alignment** | Every "hard case" surfaced during the pre-build grilling session is logged in DECISIONS.md and traced to a real test or an explicit, documented scope boundary (e.g. Lot K parking navigation, called out as out of scope rather than silently unhandled). | [DECISIONS.md](DECISIONS.md) (grilling-session entries, e.g. Entry #4), README's ["What's out of scope"](README.md#whats-out-of-scope-deliberate-design-boundaries) section below, [tests/contract/](tests/contract/) and [tests/integration/](tests/integration/) |
+| **Security** | Full OWASP Top 10 walkthrough (A01–A10) written against the actual auth/data/dependency posture, not generic advice. A same-origin CSP with no `unsafe-inline` is enforced on every response via middleware. | [SECURITY.md](SECURITY.md) (`## OWASP Top 10 walkthrough`), [app/main.py](app/main.py) (`_CSP` + `SecurityHeadersMiddleware`) |
+| **Efficiency** | Routing itself is a deterministic Dijkstra over a static in-memory graph — no LLM call sits on the pathfinding critical path, only on NL parsing/explanation either side of it. Both Gemini tiers run on Flash (Entry #29) with an output-token cap. Fan/staff rate limits bound request volume per client. | Live demo URL at the top of this file, [app/pathfinding/engine.py](app/pathfinding/engine.py) (`find_route`/`find_nearest_amenity`, no `agents` import), [app/rate_limit.py](app/rate_limit.py) (`FAN_LIMIT`/`STAFF_LIMIT`), [docs/BUILD-LOG.md](docs/BUILD-LOG.md) (efficiency remediation running-log entry) |
+| **Testing** | 193 tests across four independent layers — graph data integrity, small-synthetic-graph pathfinding units, Gemini-mocked agent contract tests, and full-endpoint integration tests against the real graph with Firestore mocked at the boundary. 100.00% coverage on `app/`. | [tests/unit/](tests/unit/), [tests/contract/](tests/contract/), [tests/integration/](tests/integration/), [scripts/verify_graph.py](scripts/verify_graph.py), [CLAUDE.md](CLAUDE.md) (`## Testing layers`) |
+| **Accessibility** | Both static pages use skip links, semantic landmarks, `aria-live` regions for async updates, visually-hidden `<label>`s on every input, and `role="alert"` error messaging — governed by a locked, rule-based accessibility section rather than ad hoc effort. | [static/fan.html](static/fan.html), [static/staff.html](static/staff.html), [DESIGN.md](DESIGN.md) (`## Accessibility (enforced by rule, not aspiration)`) |
+
+---
+
 ## What this is
 
 A GenAI-enabled indoor navigation app for a real-world venue (MetLife Stadium, host of the FIFA World Cup 2026 final). Fans describe their location and destination in natural language — no dropdowns, no section-number lookup — and receive:
@@ -69,7 +82,9 @@ Once the origin, destination, and constraints are resolved, a **deterministic Di
 .
 ├── DECISIONS.md          # The 28 locked architectural decisions (constitutional doc)
 ├── DESIGN.md             # Frontend design constitution (palette, type, spacing, tone) — Phase 4B
-├── PROGRESS.md           # Rolling build log + verifiable claim set for `make verify-docs`
+├── PROGRESS.md           # Current-state snapshot: phase status + verifiable claim set for `make verify-docs`
+├── docs/
+│   └── BUILD-LOG.md      # Full phase-by-phase running log, deviation tracker, health log, hotfix log (split from PROGRESS.md)
 ├── SECURITY.md           # OWASP walkthrough, threat model, known limitations
 ├── README.md             # This file
 ├── CLAUDE.md             # Map to the governing docs, for any Claude Code session in this repo
@@ -153,4 +168,4 @@ See DECISIONS.md Entry #17 and Entry #22 for future-enhancement extension points
 
 ## License
 
-_(added at Phase 5)_
+MIT — see [LICENSE](LICENSE).

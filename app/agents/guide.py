@@ -102,7 +102,7 @@ def _language_name(code: str) -> str:
     }.get(code, "English")
 
 
-def _explain_found(
+async def _explain_found(
     result: RouteFound,
     query: str,
     profile: FanProfile,
@@ -127,14 +127,14 @@ def _explain_found(
         total_minutes=result.total_walk_time_minutes,
         amenity_note=amenity_note,
     )
-    body = flash().generate_content(prompt).strip()
+    body = (await flash().generate_content(prompt)).strip()
     if result.traverses_stairs_only and not profile.accessibility_flags:
         warning = STAIRS_WARNING.get(code, STAIRS_WARNING["en"])
         return f"{body}\n\n{warning}"
     return body
 
 
-def _explain_blocked(result: RouteBlocked, query: str, profile: FanProfile) -> str:
+async def _explain_blocked(result: RouteBlocked, query: str, profile: FanProfile) -> str:
     """Render an Entry #17 style prose explanation for a :class:`RouteBlocked`."""
     code = _language_code(profile)
     flags = [f.value for f in profile.accessibility_flags] or "(none)"
@@ -144,10 +144,10 @@ def _explain_blocked(result: RouteBlocked, query: str, profile: FanProfile) -> s
         reason=result.reason,
         flags=flags,
     )
-    return flash().generate_content(prompt).strip()
+    return (await flash().generate_content(prompt)).strip()
 
 
-def explain_route(
+async def explain_route(
     result: RouteFound | RouteBlocked,
     query: str,
     profile: FanProfile,
@@ -155,8 +155,8 @@ def explain_route(
 ) -> str:
     """Produce NL directions or an Entry #17 blocked-route explanation."""
     if isinstance(result, RouteFound):
-        return _explain_found(result, query, profile, amenity_type)
-    return _explain_blocked(result, query, profile)
+        return await _explain_found(result, query, profile, amenity_type)
+    return await _explain_blocked(result, query, profile)
 
 
 __all__ = ["STAIRS_WARNING", "explain_route"]

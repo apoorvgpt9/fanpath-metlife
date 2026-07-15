@@ -7,7 +7,7 @@ agent function. Covers Entry #17 (RouteBlocked prose) and Entry #25
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -19,7 +19,7 @@ from app.pathfinding.engine import RouteBlocked, RouteFound
 
 def _mock_client(response_text: str) -> MagicMock:
     client = MagicMock()
-    client.generate_content.return_value = response_text
+    client.generate_content = AsyncMock(return_value=response_text)
     return client
 
 
@@ -43,7 +43,7 @@ def _fan(
 
 
 @patch("app.agents.guide.flash")
-def test_route_found_returns_directions_with_zone_names(mock_flash):
+async def test_route_found_returns_directions_with_zone_names(mock_flash):
     canned = "Head from zone_a through zone_b to zone_g. Total walk 6 minutes."
     mock_flash.return_value = _mock_client(canned)
     result = RouteFound(
@@ -53,7 +53,7 @@ def test_route_found_returns_directions_with_zone_names(mock_flash):
         total_walk_time_minutes=6.0,
         traverses_stairs_only=False,
     )
-    text = explain_route(result, "how do I get to zone_g?", _fan())
+    text = await explain_route(result, "how do I get to zone_g?", _fan())
     assert "zone_a" in text
     assert "zone_g" in text
     # Prompt sent to Gemini must contain every zone_id in order.
@@ -69,7 +69,7 @@ def test_route_found_returns_directions_with_zone_names(mock_flash):
 
 
 @patch("app.agents.guide.flash")
-def test_stairs_warning_appended_when_stairs_and_no_flags(mock_flash):
+async def test_stairs_warning_appended_when_stairs_and_no_flags(mock_flash):
     mock_flash.return_value = _mock_client("Head over to gate G. It's a 4 minute walk.")
     result = RouteFound(
         origin="a",
@@ -78,12 +78,12 @@ def test_stairs_warning_appended_when_stairs_and_no_flags(mock_flash):
         total_walk_time_minutes=4.0,
         traverses_stairs_only=True,
     )
-    text = explain_route(result, "go to G", _fan())
+    text = await explain_route(result, "go to G", _fan())
     assert STAIRS_WARNING["en"] in text
 
 
 @patch("app.agents.guide.flash")
-def test_stairs_warning_omitted_when_flags_present(mock_flash):
+async def test_stairs_warning_omitted_when_flags_present(mock_flash):
     """A fan with accessibility flags already had stairs filtered out (Entry #9),
     so the warning is unnecessary and would be alarming."""
     mock_flash.return_value = _mock_client("Head over to gate G.")
@@ -94,14 +94,14 @@ def test_stairs_warning_omitted_when_flags_present(mock_flash):
         total_walk_time_minutes=4.0,
         traverses_stairs_only=True,  # deliberately absurd; the guard is the flag check
     )
-    text = explain_route(
+    text = await explain_route(
         result, "go to G", _fan(flags=(AccessibilityFlag.WHEELCHAIR,))
     )
     assert STAIRS_WARNING["en"] not in text
 
 
 @patch("app.agents.guide.flash")
-def test_stairs_warning_omitted_when_no_stairs(mock_flash):
+async def test_stairs_warning_omitted_when_no_stairs(mock_flash):
     mock_flash.return_value = _mock_client("Head over to G.")
     result = RouteFound(
         origin="a",
@@ -110,7 +110,7 @@ def test_stairs_warning_omitted_when_no_stairs(mock_flash):
         total_walk_time_minutes=2.0,
         traverses_stairs_only=False,
     )
-    text = explain_route(result, "go to G", _fan())
+    text = await explain_route(result, "go to G", _fan())
     assert STAIRS_WARNING["en"] not in text
 
 
@@ -120,7 +120,7 @@ def test_stairs_warning_omitted_when_no_stairs(mock_flash):
 
 
 @patch("app.agents.guide.flash")
-def test_route_blocked_explanation_no_svg_call(mock_flash):
+async def test_route_blocked_explanation_no_svg_call(mock_flash):
     mock_flash.return_value = _mock_client(
         "There's no step-free route right now — the elevator near gate D is closed. "
         "If stairs are an option, I can route you that way."
@@ -130,7 +130,7 @@ def test_route_blocked_explanation_no_svg_call(mock_flash):
         destination="g",
         reason="no accessible route — needed edge closed",
     )
-    text = explain_route(
+    text = await explain_route(
         result, "get to G", _fan(flags=(AccessibilityFlag.WHEELCHAIR,))
     )
     assert "step-free" in text or "accessible" in text or "closed" in text
@@ -148,7 +148,7 @@ def test_route_blocked_explanation_no_svg_call(mock_flash):
 
 
 @patch("app.agents.guide.flash")
-def test_spanish_route_found_is_not_english(mock_flash):
+async def test_spanish_route_found_is_not_english(mock_flash):
     canned = (
         "Diríjase desde zone_a pasando por zone_b hasta zone_g. "
         "Tiempo total: 6 minutos."
@@ -161,7 +161,7 @@ def test_spanish_route_found_is_not_english(mock_flash):
         total_walk_time_minutes=6.0,
         traverses_stairs_only=False,
     )
-    text = explain_route(result, "llévame a zone_g", _fan(lang=PreferredLanguage.ES))
+    text = await explain_route(result, "llévame a zone_g", _fan(lang=PreferredLanguage.ES))
     english_words = {"walk", "route", "then", "from", "minutes"}
     lowered = text.lower()
     assert not any(w in lowered.split() for w in english_words), (
@@ -173,7 +173,7 @@ def test_spanish_route_found_is_not_english(mock_flash):
 
 
 @patch("app.agents.guide.flash")
-def test_spanish_stairs_warning_uses_spanish_string(mock_flash):
+async def test_spanish_stairs_warning_uses_spanish_string(mock_flash):
     mock_flash.return_value = _mock_client("Diríjase hasta la salida G.")
     result = RouteFound(
         origin="a",
@@ -182,13 +182,13 @@ def test_spanish_stairs_warning_uses_spanish_string(mock_flash):
         total_walk_time_minutes=4.0,
         traverses_stairs_only=True,
     )
-    text = explain_route(result, "vamos a G", _fan(lang=PreferredLanguage.ES))
+    text = await explain_route(result, "vamos a G", _fan(lang=PreferredLanguage.ES))
     assert STAIRS_WARNING["es"] in text
     assert STAIRS_WARNING["en"] not in text
 
 
 @patch("app.agents.guide.flash")
-def test_arabic_language_is_supported(mock_flash):
+async def test_arabic_language_is_supported(mock_flash):
     mock_flash.return_value = _mock_client("توجّه من zone_a إلى zone_g. المدة: 6 دقائق.")
     result = RouteFound(
         origin="zone_a",
@@ -197,7 +197,7 @@ def test_arabic_language_is_supported(mock_flash):
         total_walk_time_minutes=6.0,
         traverses_stairs_only=False,
     )
-    text = explain_route(result, "خذني إلى G", _fan(lang=PreferredLanguage.AR))
+    text = await explain_route(result, "خذني إلى G", _fan(lang=PreferredLanguage.AR))
     assert "دقائق" in text or "zone_g" in text
     prompt = mock_flash.return_value.generate_content.call_args.args[0]
     assert "Arabic" in prompt

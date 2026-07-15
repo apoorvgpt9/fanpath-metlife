@@ -12,17 +12,20 @@ governing docs, not a replacement for them — when in doubt, read the source.
 2. **DESIGN.md** — locked frontend visual/interaction rules for
    `static/fan.html`, `static/staff.html`, and the route SVG. Same
    governance model as DECISIONS.md (numbered amendments, no in-place edits).
-3. **PROGRESS.md** — rolling build log: phase status, the `make verify-docs`
-   claim table, and the running log of what actually shipped. This file wins
-   over the Notion tracker; DECISIONS.md wins over this file on architecture.
+3. **PROGRESS.md** — current-state snapshot: phase status and the
+   `make verify-docs` claim table. This file wins over the Notion tracker;
+   DECISIONS.md wins over this file on architecture. The full phase-by-phase
+   running log, deviation tracker, live URL health log, rubric
+   self-assessment, and hotfix log live in **`docs/BUILD-LOG.md`** — split
+   out to keep this file short, moved verbatim, nothing condensed.
 4. **SECURITY.md** — OWASP Top 10 walkthrough and documented, deliberate
    limitations (e.g. anonymous-auth session loss, single staff token).
 
 **Session-exit rule (Entry #24):** no coding session ends without diffing
 DECISIONS.md / PROGRESS.md against what actually got built. If you change
 something that contradicts a locked entry, either don't, or add a proper
-superseding entry and update PROGRESS.md's running log — don't leave the
-docs stale.
+superseding entry and update `docs/BUILD-LOG.md`'s running log — don't leave
+the docs stale.
 
 ## What this project is
 
@@ -117,6 +120,10 @@ corresponding DECISIONS.md entry for full rationale before deviating.
 - Run `make lint` and `make test` before considering a change done.
   `make verify-graph` after any graph data change. `make verify-docs` after
   any change touching a claim in PROGRESS.md's claim table.
+- **`docs/BUILD-LOG.md`** holds the full running log, deviation tracker,
+  live URL health log, rubric self-assessment, and hotfix log — append new
+  entries there, not to PROGRESS.md, which stays a short current-state
+  snapshot.
 
 ## Testing layers (Entry #21)
 

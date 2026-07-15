@@ -5,8 +5,10 @@ to Flash to halve per-request latency after a measured Efficiency regression).
 Model literals are env-configurable so the tier can be changed back via
 ``GEMINI_PRO_MODEL`` without a code change.
 
-API surface uses the legacy ``generateContent`` endpoint per Entry #26, matching
-the pattern already established in ``scripts/draft_graph.py``.
+API surface uses the async ``client.aio.models.generate_content`` endpoint for
+non-blocking I/O (Entry #29 efficiency follow-up). Route handlers are ``async
+def`` and ``await`` the client directly, freeing the event loop for concurrent
+requests.
 
 Agents raise :class:`GeminiServiceError` / :class:`GeminiTimeoutError` from
 this module; per DECISIONS.md Entry #23 the HTTP error mapping is Phase 4's
@@ -45,7 +47,7 @@ MAX_OUTPUT_TOKENS = 5120
 
 
 class GeminiClient:
-    """Thin, mockable wrapper over ``genai.Client.models.generate_content``.
+    """Thin, mockable wrapper over ``genai.Client.aio.models.generate_content``.
 
     Deliberately narrow: one public method. Contract tests mock this class
     (or the ``.flash()`` / ``.pro()`` factory functions) rather than the
@@ -56,7 +58,7 @@ class GeminiClient:
     def __init__(self, model_name: str) -> None:
         self.model_name = model_name
 
-    def generate_content(
+    async def generate_content(
         self,
         prompt: str,
         *,
@@ -78,7 +80,7 @@ class GeminiClient:
         if response_mime_type:
             config.response_mime_type = response_mime_type
         try:
-            response = client.models.generate_content(
+            response = await client.aio.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
                 config=config,

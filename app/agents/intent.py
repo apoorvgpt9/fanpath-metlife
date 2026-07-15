@@ -116,18 +116,18 @@ def _dispatch_profile(data: dict[str, Any]) -> ProfileExtraction:
     raise GeminiServiceError(f"profile response has unknown type: {kind!r}")
 
 
-def extract_profile(nl_input: str) -> ProfileExtraction:
+async def extract_profile(nl_input: str) -> ProfileExtraction:
     """Parse a fan's onboarding message into a profile-extraction union member."""
     if not nl_input or not nl_input.strip():
         return ProfileFailed(reason="empty input")
     prompt = _PROFILE_PROMPT_TEMPLATE.replace("__NL_INPUT__", nl_input.strip())
     client = pro()
-    raw = client.generate_content(prompt, response_mime_type="application/json")
+    raw = await client.generate_content(prompt, response_mime_type="application/json")
     try:
         return _parse_profile_json(raw)
     except GeminiServiceError:
         _log.warning("profile JSON parse failed, retrying once")
-        raw = client.generate_content(prompt, response_mime_type="application/json")
+        raw = await client.generate_content(prompt, response_mime_type="application/json")
         return _parse_profile_json(raw)
 
 
@@ -278,7 +278,7 @@ def _assert_zones_exist(graph: Graph, zone_ids: list[str]) -> None:
         )
 
 
-def parse_navigation_request(
+async def parse_navigation_request(
     query: str,
     profile: FanProfile,
     history: list[ConversationTurn],
@@ -289,12 +289,12 @@ def parse_navigation_request(
         return UnresolvableRequest(reason="empty query")
     prompt = _build_navigation_prompt(query, profile, history, graph)
     client = pro()
-    raw = client.generate_content(prompt, response_mime_type="application/json")
+    raw = await client.generate_content(prompt, response_mime_type="application/json")
     try:
         return _parse_navigation_json(raw, graph)
     except GeminiServiceError:
         _log.warning("navigation JSON parse failed, retrying once")
-        raw = client.generate_content(prompt, response_mime_type="application/json")
+        raw = await client.generate_content(prompt, response_mime_type="application/json")
         return _parse_navigation_json(raw, graph)
 
 

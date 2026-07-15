@@ -284,19 +284,19 @@ def test_closure_visible_to_navigate_endpoint(
     )
 
     import json as _json
-    from unittest.mock import MagicMock
+    from unittest.mock import AsyncMock, MagicMock
 
     pro_client = MagicMock()
-    pro_client.generate_content.return_value = _json.dumps(
+    pro_client.generate_content = AsyncMock(return_value=_json.dumps(
         {
             "type": "resolved",
             "origin": "gate_a_plaza",
             "destination": "gate_c_plaza",
             "rationale": "clear",
         }
-    )
+    ))
     flash_client = MagicMock()
-    flash_client.generate_content.return_value = "Take the plaza walkway."
+    flash_client.generate_content = AsyncMock(return_value="Take the plaza walkway.")
 
     client = TestClient(app)
     with patch("app.agents.intent.pro", return_value=pro_client), patch(
